@@ -7,12 +7,6 @@
   ******************************************************************************
 */
 
-#include "stm32f0xx.h"
-#include <stdint.h>
-#include <stdio.h>
-#include "fifo.h"
-#include "tty.h"
-#include "commands.h"
 #include "superSnake.h"
 
 void internal_clock();

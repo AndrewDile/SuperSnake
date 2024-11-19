@@ -24,6 +24,10 @@ uint8_t gameboard[NUM_X_CELLS][NUM_Y_CELLS] = {0}; // value determines what is d
 // array to store snake
 segment snake[NUM_X_CELLS * NUM_Y_CELLS]; // not dynamically stored to avoid fragmentation and leaks, and to ensure program doesn't run out of space during gameplay
 
+// snake movement variables
+int8_t snakeLength = 2;
+uint32_t snakeSpeed = 1000;
+
 // variable for joystick direction
 int8_t joystickDirection = NEUTRAL;
 
