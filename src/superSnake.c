@@ -59,7 +59,7 @@ void updateLCDDisplay() {
         LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), black);
         break;
       case SNACK:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), green);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 2, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 2, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 4, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 4, green);
         break;
       case HEAD_LEFT:
         LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
