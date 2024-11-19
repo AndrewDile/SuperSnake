@@ -68,16 +68,16 @@ void updateLCDDisplay() {
         LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
         break;
       case HEAD_UP:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
         break;
       case HEAD_DOWN:
         LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
         break;
       case SEGMENT_VER:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
         break;
       case SEGMENT_HOR:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 2, orange);
         break;
       case BEND_UP_RIGHT:
         LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
@@ -108,41 +108,65 @@ void updateLCDDisplay() {
 // }
 
 // function to initialize ADC for joystick readings
+
 void setupJoystick() {
+
   // enable RCC clocks, port A, and pins
+
   RCC->APB2ENR |= RCC_APB2ENR_ADCEN;
+
   RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+
   GPIOA->MODER |= 0xF;
 
-  RCC->CR2 |= RCC_CR2_HSI14ON;
-  while ((RCC->CR2 & RCC_CR2_HSI14RDY) == 0);
+
+  RCC->CR2 |= RCC_CR2_HSI14ON; //enable highspeed 14MHz
+
+  while (!(RCC->CR2 & RCC_CR2_HSI14RDY)); //wait
+
 
   // set resolution to 6 bits
+
   ADC1->CFGR1 &= ~ADC_CFGR1_RES;
+
   ADC1->CFGR1 |= ADC_CFGR1_RES_1;
 
+
   // configure ADC to only do a conversion after the last value has been read
+
   ADC1->CFGR1 |= ADC_CFGR1_WAIT;
 
-  // select channels 0 and 1 (PA0 for JoystickX, PA1 for JoystickY)
-  ADC1->CHSELR = 0x3;
 
-  // enable end of conversion interrupt
-  ADC1->IER |= ADC_IER_EOCIE;
+ // enable ADC peripheral and wait for it to be ready
 
-  // enable ADC peripheral and wait for it to be ready
   ADC1->CR |= ADC_CR_ADEN;
+
   while (!(ADC1->ISR & ADC_ISR_ADRDY));
 
+  while((ADC1->CR & ADC_CR_ADSTART));
+
+
+  // select channels 0 and 1 (PA0 for JoystickX, PA1 for JoystickY)
+
+  ADC1->CHSELR = ADC_CHSELR_CHSEL0 | ADC_CHSELR_CHSEL1;
+
+
+  // enable end of conversion interrupt
+
+  ADC1->IER |= ADC_IER_EOCIE;
+
+
   // start conversion
+
   ADC1->CR |= ADC_CR_ADSTART;
 
+
   // enable ADC interrupt in NVIC
+
   NVIC_EnableIRQ(ADC1_IRQn);
 }
 
-// IRQ Handler when ADC conversion finishes
-void ADC1_IRQHandler() {
+void updateJoystick() {
   int8_t ADCReading = ADC1->DR;
   // read values sequentially
 
@@ -189,10 +213,30 @@ void ADC1_IRQHandler() {
   }
 }
 
-void updateJoystick() {
-  if ((ADC1->ISR & ADC_ISR_ADRDY)) {  // check if ADC is not already converting
-    ADC1->CR |= ADC_CR_ADSTART;      // start conversion
-  }
+
+void setupDMA(){
+
+  RCC->AHBENR |= RCC_AHBENR_DMA1EN;
+
+  ADC1->CFGR1 |= ADC_CFGR1_DMAEN | ADC_CFGR1_DMACFG;
+
+  DMA1_Channel1->CPAR = (uint32_t) (&(ADC1->DR));
+
+  DMA1_Channel1->CMAR = (uint32_t)(joystickDirection);
+
+  DMA1_Channel1->CNDTR = 2;
+
+  DMA1_Channel1->CCR |= DMA_CCR_MINC | DMA_CCR_MSIZE_0 | DMA_CCR_PSIZE_0 | DMA_CCR_TEIE | DMA_CCR_CIRC;
+
+  DMA1_Channel1->CCR |= DMA_CCR_EN;
+
+}
+
+
+void enableDMA(void){
+
+  DMA1_Channel1->CCR |= DMA_CCR_EN;
+
 }
 
 void initializeSnake() {

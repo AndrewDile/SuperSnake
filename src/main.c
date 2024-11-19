@@ -16,6 +16,8 @@ int main() {
   init_usart5();
   setupLCDDisplay();
   initializeSnake();
+  setupDMA();
+  enableDMA();
   // setupJoystick();
 
   // loop part of game
