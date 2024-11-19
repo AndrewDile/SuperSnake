@@ -16,9 +16,33 @@ int main() {
   init_usart5();
   setupLCDDisplay();
   initializeSnake();
+  setupJoystick();
 
   // loop part of game
   while (true) {
-    updateLCDDisplay();
+    // updateLCDDisplay();
+
+    updateJoystick();
+
+    switch (joystickDirection) {
+      case NEUTRAL:
+        LCD_Clear(white);
+        break;
+      case UP:
+        LCD_Clear(red);
+        break;
+      case DOWN:
+        LCD_Clear(orange);
+        break;
+      case RIGHT:
+        LCD_Clear(green);
+        break;
+      case LEFT:
+        LCD_Clear(blue);
+        break;
+      default:
+        LCD_Clear(purple);
+        break;
+    }
   }
 }

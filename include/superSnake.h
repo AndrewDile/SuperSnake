@@ -136,11 +136,14 @@ extern segment snake[NUM_X_CELLS * NUM_Y_CELLS];
 extern int8_t snakeLength; // current score can be derived from this
 extern uint32_t snakeSpeed;
 extern int8_t joystickDirection;
+int8_t joystickXraw;
+int8_t joystickYraw;
 
 // function declarations
 void setupLCDDisplay();
 void updateLCDDisplay();
 void setupJoystick();
+void updateJoystick();
 void initializeSnake();
 void setupMovementTimer();
 void generateSnack();

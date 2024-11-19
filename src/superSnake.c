@@ -27,6 +27,8 @@ uint32_t snakeSpeed = 1000;
 
 // variable for joystick direction
 int8_t joystickDirection = NEUTRAL;
+int8_t joystickXraw = -1;
+int8_t joystickYraw = -1;
 
 // flag for some code to only run on first cycle
 bool initialized = false;
@@ -112,6 +114,9 @@ void setupJoystick() {
   RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
   GPIOA->MODER |= 0xF;
 
+  RCC->CR2 |= RCC_CR2_HSI14ON;
+  while ((RCC->CR2 & RCC_CR2_HSI14RDY) == 0);
+
   // set resolution to 6 bits
   ADC1->CFGR1 &= ~ADC_CFGR1_RES;
   ADC1->CFGR1 |= ADC_CFGR1_RES_1;
@@ -138,55 +143,55 @@ void setupJoystick() {
 
 // IRQ Handler when ADC conversion finishes
 void ADC1_IRQHandler() {
-  // initialize temp variables
-  static int8_t x = -1;
-  static int8_t y = -1;
-
+  int8_t ADCReading = ADC1->DR;
   // read values sequentially
-  if (ADC1->ISR & ADC_ISR_EOC) {
-    if(x == -1) {
-      x = ADC1->DR;
-    } else {
-      y = ADC1->DR;
 
-      // set joystickDirection based on readings
-      if (x < 10) joystickDirection = LEFT;
-      else if (x > 50) joystickDirection = RIGHT;
-      else if (y < 10) joystickDirection = DOWN;
-      else if (y > 50) joystickDirection = UP;
-      else joystickDirection = NEUTRAL;
+  if(joystickXraw == -1) {
+    joystickXraw = ADCReading;
 
-      // prevent 180 degree turns
-      if (gameState == RUNNING) {
-        switch (joystickDirection) {
-          case NEUTRAL:
-            break;
-          case UP:
-            if (snake[0].direction == DOWN) break;
-            snake[0].direction = joystickDirection;
-            break;
-          case RIGHT:
-            if (snake[0].direction == LEFT) break;
-            snake[0].direction = joystickDirection;
-            break;
-          case DOWN:
-            if (snake[0].direction == UP) break;
-            snake[0].direction = joystickDirection;
-            break;
-          case LEFT:
-            if (snake[0].direction == RIGHT) break;
-            snake[0].direction = joystickDirection;
-            break;
-          default:
+  } else {
+    joystickYraw = ADCReading;
+
+    // set joystickDirection based on readings
+    if (joystickXraw < 10) joystickDirection = LEFT;
+    else if (joystickXraw > 50) joystickDirection = RIGHT;
+    else if (joystickYraw < 10) joystickDirection = DOWN;
+    else if (joystickYraw > 50) joystickDirection = UP;
+    else joystickDirection = NEUTRAL;
+
+    // prevent 180 degree turns during game
+    if (gameState == RUNNING) {
+      switch (joystickDirection) {
+        case NEUTRAL:
           break;
-        }
+        case UP:
+          if (snake[0].direction == DOWN) break;
+          snake[0].direction = joystickDirection;
+          break;
+        case RIGHT:
+          if (snake[0].direction == LEFT) break;
+          snake[0].direction = joystickDirection;
+          break;
+        case DOWN:
+          if (snake[0].direction == UP) break;
+          snake[0].direction = joystickDirection;
+          break;
+        case LEFT:
+          if (snake[0].direction == RIGHT) break;
+          snake[0].direction = joystickDirection;
+          break;
+        default:
+        break;
       }
-
-      // start new ADC conversion
-      ADC1->CR |= ADC_CR_ADSTART;
-      x = -1;
-      y = -1;
     }
+    joystickXraw = -1;
+    joystickYraw = -1;
+  }
+}
+
+void updateJoystick() {
+  if ((ADC1->ISR & ADC_ISR_ADRDY)) {  // check if ADC is not already converting
+    ADC1->CR |= ADC_CR_ADSTART;      // start conversion
   }
 }
 
