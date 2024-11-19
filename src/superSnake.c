@@ -59,7 +59,7 @@ void updateLCDDisplay() {
         LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), black);
         break;
       case SNACK:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), green);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), blue);
         break;
       case HEAD_LEFT:
         LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), red);
@@ -290,6 +290,7 @@ void movementLogic() {
               playSound(WON);
               return;
             }
+            ateSnack();  // possibly obtain an ability
             playSound(EAT);
             generateSnack();  // generate new snack
           }
@@ -309,6 +310,7 @@ void movementLogic() {
               playSound(WON);
               return;
             }
+            ateSnack();  // possibly obtain an ability
             playSound(EAT);
             generateSnack();  // generate new snack
           }
@@ -328,6 +330,7 @@ void movementLogic() {
               playSound(WON);
               return;
             }
+            ateSnack();  // possibly obtain an ability
             playSound(EAT);
             generateSnack();  // generate new snack
           }
@@ -347,6 +350,7 @@ void movementLogic() {
               playSound(WON);
               return;
             }
+            ateSnack();  // possibly obtain an ability
             playSound(EAT);
             generateSnack();  // generate new snack
           }
@@ -509,140 +513,6 @@ void movementLogic() {
     }
   }
   
-  // // Calculate new head position based on current head position
-  // uint8_t newHeadX = snake[0].x;
-  // uint8_t newHeadY = snake[0].y;
-  // uint8_t oldDirection = snake[0].direction;
-  
-  // // Update position based on current joystick direction
-  // // joystickDirection i believe is already being updated by ADC1_IRQHandler
-  // switch(joystickDirection) {
-  // case UP:
-  //   if(oldDirection != DOWN) { // Prevent 180-degree turns
-  //     newHeadY = (newHeadY > 0) ? newHeadY - 1 : NUM_Y_CELLS - 1;
-  //     snake[0].direction = UP;
-  //   }
-  //   break;
-  // case DOWN:
-  //   if(oldDirection != UP) {
-  //     newHeadY = (newHeadY + 1) % NUM_Y_CELLS;
-  //     snake[0].direction = DOWN;
-  //   }
-  //   break;
-  // case LEFT:
-  //   if(oldDirection != RIGHT) {
-  //     newHeadX = (newHeadX > 0) ? newHeadX - 1 : NUM_X_CELLS - 1;
-  //     snake[0].direction = LEFT;
-  //   }
-  //   break;
-  // case RIGHT:
-  //   if(oldDirection != LEFT) {
-  //     newHeadX = (newHeadX + 1) % NUM_X_CELLS;
-  //     snake[0].direction = RIGHT;
-  //   }
-  //   break;
-  // case NEUTRAL:
-  //   // Continue in current direction
-  //   switch(oldDirection) {
-  //     case UP:
-  //       newHeadY = (newHeadY > 0) ? newHeadY - 1 : NUM_Y_CELLS - 1;
-  //       break;
-  //     case DOWN:
-  //       newHeadY = (newHeadY + 1) % NUM_Y_CELLS;
-  //       break;
-  //     case LEFT:
-  //       newHeadX = (newHeadX > 0) ? newHeadX - 1 : NUM_X_CELLS - 1;
-  //       break;
-  //     case RIGHT:
-  //       newHeadX = (newHeadX + 1) % NUM_X_CELLS;
-  //       break;
-  //   }
-  //   break;
-  // }
-  
-  // // Check for collision with self
-  // for(int i = 1; i < snakeLength; i++) {
-  //   if(newHeadX == snake[i].x && newHeadY == snake[i].y) {
-  //     gameState = GAMELOST;
-  //     playSound(LOST);
-  //     return;
-  //   }
-  // }
-  
-  // // Check if snack was eaten
-  // bool snackEaten = (gameboard[newHeadX][newHeadY] == SNACK);
-  
-  // // Store old positions for body movement
-  // uint8_t prevX[MAX_SNAKE_LENGTH];
-  // uint8_t prevY[MAX_SNAKE_LENGTH];
-  // uint8_t prevDir[MAX_SNAKE_LENGTH];
-  
-  // for(int i = 0; i < snakeLength; i++) {
-  //   prevX[i] = snake[i].x;
-  //   prevY[i] = snake[i].y;
-  //   prevDir[i] = snake[i].direction;
-  //   // Clear current position on gameboard
-  //   gameboard[snake[i].x][snake[i].y] = EMPTY;
-  // }
-  
-  // // Update head position
-  // snake[0].x = newHeadX;
-  // snake[0].y = newHeadY;
-  
-  // // Set head tile type based on direction
-  // switch(snake[0].direction) {
-  //   case LEFT:
-  //     gameboard[newHeadX][newHeadY] = HEAD_LEFT;
-  //     break;
-  //   case RIGHT:
-  //     gameboard[newHeadX][newHeadY] = HEAD_RIGHT;
-  //     break;
-  //   case UP:
-  //     gameboard[newHeadX][newHeadY] = HEAD_UP;
-  //     break;
-  //   case DOWN:
-  //     gameboard[newHeadX][newHeadY] = HEAD_DOWN;
-  //     break;
-  // }
-  
-  // // Update body segments
-  // for(int i = 1; i < snakeLength; i++) {
-  //   snake[i].x = prevX[i-1];
-  //   snake[i].y = prevY[i-1];
-  //   snake[i].direction = prevDir[i-1];
-    
-  //   // Determine segment tile type
-  //   if(snake[i].direction == snake[i-1].direction) {
-  //     // Straight segment
-  //     gameboard[snake[i].x][snake[i].y] = (snake[i].direction == LEFT || snake[i].direction == RIGHT) ? SEGMENT_HOR : SEGMENT_VER;
-  //   } else {
-  //       // Bend segment
-  //       if((snake[i-1].direction == RIGHT && snake[i].direction == UP) || (snake[i-1].direction == DOWN && snake[i].direction == LEFT)) {
-  //         gameboard[snake[i].x][snake[i].y] = BEND_UP_LEFT;
-  //       } else if((snake[i-1].direction == RIGHT && snake[i].direction == DOWN) || (snake[i-1].direction == UP && snake[i].direction == LEFT)) {
-  //         gameboard[snake[i].x][snake[i].y] = BEND_DOWN_LEFT;
-  //       } else if((snake[i-1].direction == LEFT && snake[i].direction == UP) || (snake[i-1].direction == DOWN && snake[i].direction == RIGHT)) {
-  //         gameboard[snake[i].x][snake[i].y] = BEND_UP_RIGHT;
-  //       } else {
-  //         gameboard[snake[i].x][snake[i].y] = BEND_DOWN_RIGHT;
-  //       }
-  //     }
-  // }
-  
-  // if(snackEaten) {
-  //   // Increase snake length and adjust speed
-  //   if(snakeLength < MAX_SNAKE_LENGTH) {
-  //     snakeLength++;
-  //     if(snakeSpeed > MIN_SNAKE_SPEED) {
-  //       snakeSpeed -= SPEED_INCREASE;
-  //       // Update timer period
-  //       TIM3->ARR = snakeSpeed;
-  //     }
-  //     playSound(EAT); // Play snack eaten sound
-  //     generateSnack(); // Generate new snack
-  //   }
-  // }
-  
   // Update the game display
   updateLCDDisplay();
 }
@@ -694,4 +564,9 @@ void playSound(uint8_t song) {
       break;
   }
   TIM3->CCR1 = TIM3->ARR / 2; //maintains 50% cycle 
+}
+
+// 
+void ateSnack() {
+
 }
