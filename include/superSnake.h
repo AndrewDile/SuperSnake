@@ -93,6 +93,10 @@ extern uint16_t orange;
 #define BEND_RIGHT_DOWN BEND_DOWN_RIGHT
 #define BEND_LEFT_UP BEND_UP_LEFT
 #define BEND_LEFT_DOWN BEND_DOWN_LEFT
+#define TAIL_LEFT 12
+#define TAIL_RIGHT 13
+#define TAIL_UP 14
+#define TAIL_DOWN 15
 
 // constants for audio
 #define EAT 0
