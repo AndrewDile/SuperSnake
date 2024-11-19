@@ -8,9 +8,6 @@
  */
 
 #include "superSnake.h"
-#include "stm32f0xx.h"
-#include <stdint.h>
-#include <stdio.h>
 #include "fifo.h"
 #include "tty.h"
 
@@ -44,11 +41,6 @@ uint16_t yellow = 65504;
 uint16_t purple = 30735;
 uint16_t orange = 64512;
 
-// access memory via SPI to SD interface to get high score memory
-void readMemory() {
-
-}
-
 // set up LCD display to be communicated with
 void setupLCDDisplay() {
   LCD_Setup();
@@ -60,56 +52,43 @@ void setupLCDDisplay() {
 void updateLCDDisplay() {
   for (int x = 0; x <= NUM_X_CELLS; x++) {
     for (int y = 0; y <= NUM_Y_CELLS; y++) {
-      switch (gameboard[x][y])
-      {
+      switch (gameboard[x][y]) {
       case EMPTY:
-        LCD_DrawFillRectangle(X_BORDER + (CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), (X_BORDER + (CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), green);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), black);
         break;
-
       case SNACK:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), green);
         break;
-
       case HEAD_LEFT:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), red);
         break;
-
       case HEAD_RIGHT:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), red);
         break;
-
       case HEAD_UP:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), red);
         break;
-
       case HEAD_DOWN:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), red);
         break;
-
       case SEGMENT_VER:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
         break;
-
       case SEGMENT_HOR:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
         break;
-
       case BEND_UP_RIGHT:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
         break;
-
       case BEND_UP_LEFT:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
         break;
-
       case BEND_DOWN_RIGHT:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
         break;
-
       case BEND_DOWN_LEFT:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
         break;
-
       default:
         break;
       }
@@ -188,39 +167,36 @@ void ADC1_IRQHandler() {
 }
 
 void initializeSnake() {
-    // Start snake in middle of board
-    // uint8_t startX = NUM_X_CELLS / 2;
-    // uint8_t startY = NUM_Y_CELLS / 2;
-    
-    // // Initialize snake segments
-    // for(int i = 0; i < snakeLength; i++) {
-    //     snake[i].x = startX - i;  // Snake starts horizontally
-    //     snake[i].y = startY;
-    //     gameboard[startX - i][startY] = (i == 0) ? 2 : 3;  // 2 for head, 3 for body
-    // }
-    
-    // Generate first snack
-    generateSnack();
+  // set position and direction of beginning snake head and segment
+  snake[0].x = NUM_X_CELLS / 2;
+  snake[0].y = NUM_Y_CELLS / 2;
+  snake[0].direction = UP;
+  snake[1].x = snake[0].x;
+  snake[1].y = snake[0].y + 1;
+  snake[1].direction = snake[0].direction;
+  
+  // Generate first snack
+  generateSnack();
 }
 
 void setupMovementTimer() {
-    // Enable TIM3 clock
-    RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
-    
-    // Set prescaler for 1ms resolution
-    TIM3->PSC = 47999;  // 48MHz/48000 = 1kHz
-    
-    // Set initial period to snakeSpeed (in ms)
-    TIM3->ARR = INITIAL_SNAKE_SPEED;
-    
-    // Enable update interrupt
-    TIM3->DIER |= TIM_DIER_UIE;
-    
-    // Enable timer
-    TIM3->CR1 |= TIM_CR1_CEN;
-    
-    // Enable TIM3 interrupt in NVIC
-    NVIC_EnableIRQ(TIM3_IRQn);
+  // Enable TIM3 clock
+  RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
+  
+  // Set prescaler for 1ms resolution
+  TIM3->PSC = 47999;  // 48MHz/48000 = 1kHz
+  
+  // Set initial period to snakeSpeed (in ms)
+  TIM3->ARR = INITIAL_SNAKE_SPEED;
+  
+  // Enable update interrupt
+  TIM3->DIER |= TIM_DIER_UIE;
+  
+  // Enable timer
+  TIM3->CR1 |= TIM_CR1_CEN;
+  
+  // Enable TIM3 interrupt in NVIC
+  NVIC_EnableIRQ(TIM3_IRQn);
 }
 
 void generateSnack() {
@@ -414,19 +390,16 @@ void gameStateHandler() {
       case IDLE:
 
         break;
-      
       case RUNNING:
 
         break;
-      
       case GAMELOST:
 
         break;
-
       case GAMEWON:
 
         break;
-      
+    
       default:
         break; 
     }

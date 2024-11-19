@@ -34,6 +34,11 @@
 //  PC9  as GPIO -- LcdDb6
 //  PC10 as GPIO -- LcdDb7
 //
+//  Using Lab7 Pin Schematic For
+//    TFT Display and SD Card
+//  UART also connected like past
+//    labs
+//
 /////////////////////////////////
 
 // global includes
@@ -133,7 +138,6 @@ extern uint32_t snakeSpeed;
 extern int8_t joystickDirection;
 
 // function declarations
-void readMemory();
 void setupLCDDisplay();
 void updateLCDDisplay();
 void setupJoystick();
