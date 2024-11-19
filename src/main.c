@@ -15,8 +15,8 @@ int main() {
   internal_clock();
   init_usart5();
   setupLCDDisplay();
-  // initializeSnake();
-  setupJoystick();
+  initializeSnake();
+  // setupJoystick();
 
   // loop part of game
   while (true) {

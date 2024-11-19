@@ -98,10 +98,10 @@ extern uint16_t orange;
 #define BEND_RIGHT_DOWN BEND_DOWN_RIGHT
 #define BEND_LEFT_UP BEND_UP_LEFT
 #define BEND_LEFT_DOWN BEND_DOWN_LEFT
-#define TAIL_LEFT 12  // direction signifies which way the tail connects to snake (TAIL_UP means next segment is above)
-#define TAIL_RIGHT 13
-#define TAIL_UP 14
-#define TAIL_DOWN 15
+#define TAIL_LEFT HEAD_RIGHT
+#define TAIL_RIGHT HEAD_LEFT
+#define TAIL_UP HEAD_DOWN
+#define TAIL_DOWN HEAD_UP
 
 // constants for audio
 #define EAT 0
