@@ -1,34 +1,20 @@
 /**
   ******************************************************************************
   * @file    main.c
-  * @author  Weili An, Niraj Menon
-  * @date    Feb 7, 2024
-  * @brief   ECE 362 Lab 7 student template
+  * @author  Andrew Dile, Abhi Annigeri, Daniel Wang, William Lee
+  * @date    November 4 2024
+  * @brief   ECE 362 Snake Game
   ******************************************************************************
 */
-
-/*******************************************************************************/
-
-// Fill out your username!  Even though we're not using an autotest, 
-// it should be a habit to fill out your username in this field now.
-const char* username = "dilea";
-
-/*******************************************************************************/ 
 
 #include "stm32f0xx.h"
 #include <stdint.h>
 #include <stdio.h>
 #include "fifo.h"
 #include "tty.h"
+#include "commands.h"
 
 void internal_clock();
-
-// Uncomment only one of the following to test each step
-// #define STEP1
-// #define STEP2
-// #define STEP3
-// #define STEP4
-#define SHELL
 
 void init_usart5() {
     RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
@@ -51,140 +37,6 @@ void init_usart5() {
     while(!(USART5->ISR & USART_ISR_TEACK));
     while(!(USART5->ISR & USART_ISR_REACK));
 }
-
-#ifdef STEP1
-int main(void){
-    internal_clock();
-    init_usart5();
-    for(;;) {
-        while (!(USART5->ISR & USART_ISR_RXNE)) { }
-        char c = USART5->RDR;
-        while(!(USART5->ISR & USART_ISR_TXE)) { }
-        USART5->TDR = c;
-    }
-}
-#endif
-
-#ifdef STEP2
-#include <stdio.h>
-
-// TODO Resolve the echo and carriage-return problem
-
-int __io_putchar(int c) {
-    while(!(USART5->ISR & USART_ISR_TXE));
-    if (c == '\n') {
-        USART5->TDR = '\r';
-        while(!(USART5->ISR & USART_ISR_TXE));
-        USART5->TDR = '\n';
-    }
-    else {
-        USART5->TDR = c;
-    }
-    return c;
-}
-
-int __io_getchar(void) {
-    while (!(USART5->ISR & USART_ISR_RXNE));
-    char c = USART5->RDR;
-    if (c == '\r') {
-        c = '\n';
-    }
-    __io_putchar(c);
-    return c;
-}
-
-int main() {
-    internal_clock();
-    init_usart5();
-    setbuf(stdin,0);
-    setbuf(stdout,0);
-    setbuf(stderr,0);
-    printf("Enter your name: ");
-    char name[80];
-    fgets(name, 80, stdin);
-    printf("Your name is %s", name);
-    printf("Type any characters.\n");
-    for(;;) {
-        char c = getchar();
-        putchar(c);
-    }
-}
-#endif
-
-#ifdef STEP3
-#include <stdio.h>
-#include "fifo.h"
-#include "tty.h"
-int __io_putchar(int c) {
-    while(!(USART5->ISR & USART_ISR_TXE));
-    if (c == '\n') {
-        USART5->TDR = '\r';
-        while(!(USART5->ISR & USART_ISR_TXE));
-        USART5->TDR = '\n';
-    }
-    else {
-        USART5->TDR = c;
-    }
-    return c;
-}
-
-int __io_getchar(void) {
-    int temp = line_buffer_getchar();
-    return(temp);
-}
-
-int main() {
-    internal_clock();
-    init_usart5();
-    setbuf(stdin,0);
-    setbuf(stdout,0);
-    setbuf(stderr,0);
-    printf("Enter your name: ");
-    char name[80];
-    fgets(name, 80, stdin);
-    printf("Your name is %s", name);
-    printf("Type any characters.\n");
-    for(;;) {
-        char c = getchar();
-        putchar(c);
-    }
-}
-#endif
-
-#ifdef STEP4
-
-
-
-// Works like line_buffer_getchar(), but does not check or clear ORE nor wait on new characters in USART
-
-
-void USART3_8_IRQHandler() {
-    while(DMA2_Channel2->CNDTR != sizeof serfifo - seroffset) {
-        if (!fifo_full(&input_fifo))
-            insert_echo_char(serfifo[seroffset]);
-        seroffset = (seroffset + 1) % sizeof serfifo;
-    }
-}
-
-int main() {
-    internal_clock();
-    init_usart5();
-    enable_tty_interrupt();
-
-    setbuf(stdin,0); // These turn off buffering; more efficient, but makes it hard to explain why first 1023 characters not dispalyed
-    setbuf(stdout,0);
-    setbuf(stderr,0);
-    printf("Enter your name: "); // Types name but shouldn't echo the characters; USE CTRL-J to finish
-    char name[80];
-    fgets(name, 80, stdin);
-    printf("Your name is %s", name);
-    printf("Type any characters.\n"); // After, will type TWO instead of ONE
-    for(;;) {
-        char c = getchar();
-        putchar(c);
-    }
-}
-#endif
 
 #define FIFOSIZE 16
 char serfifo[FIFOSIZE];
@@ -255,14 +107,12 @@ void init_spi1_slow() {
     GPIOB->AFR[0] &= ~(GPIO_AFRL_AFSEL3 | GPIO_AFRL_AFSEL4 | GPIO_AFRL_AFSEL5);
     GPIOB->AFR[0] |= (0x00 << GPIO_AFRL_AFSEL3_Pos) | (0x00 << GPIO_AFRL_AFSEL4_Pos) | (0x00 << GPIO_AFRL_AFSEL5_Pos);
 
-    // SPI1->CR1 = 0;
-    // SPI1->CR2 = 0;
     SPI1->CR1 &= ~SPI_CR1_SPE;
 
-    SPI1->CR1 |= SPI_CR1_BR; //(0b111 << SPI_CR1_BR_Pos);
+    SPI1->CR1 |= SPI_CR1_BR;
     SPI1->CR1 |= SPI_CR1_MSTR | SPI_CR1_SSM | SPI_CR1_SSI;
 
-    SPI1->CR2 |= SPI_CR2_DS; //(0b111 << SPI_CR2_DS_Pos);
+    SPI1->CR2 |= SPI_CR2_DS;
     SPI1->CR2 &= ~(SPI_CR2_DS_3);
     SPI1->CR2 |= SPI_CR2_FRXTH;
 
@@ -299,9 +149,6 @@ void init_lcd_spi() {
     sdcard_io_high_speed();
 }
 
-#ifdef SHELL
-#include "commands.h"
-#include <stdio.h>
 int main() {
     internal_clock();
     init_usart5();
@@ -311,4 +158,3 @@ int main() {
     setbuf(stderr,0);
     command_shell();
 }
-#endif
