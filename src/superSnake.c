@@ -16,7 +16,7 @@ int8_t gameState = IDLE;
 int8_t lastGameState = IDLE;
 
 // gameboard is 2D array of gametile structures, value of tile updated on snake movement
-uint8_t gameboard[NUM_X_CELLS][NUM_Y_CELLS] = {0}; // value determines what is displayed in that cell (0 = blank, 1 = snack, 2 = head facing left, etc.)
+int8_t gameboard[NUM_X_CELLS][NUM_Y_CELLS] = {0}; // value determines what is displayed in that cell (0 = blank, 1 = snack, 2 = head facing left, etc.)
 
 // array to store snake
 segment snake[NUM_X_CELLS * NUM_Y_CELLS]; // not dynamically stored to avoid fragmentation and leaks, and to ensure program doesn't run out of space during gameplay
@@ -156,7 +156,31 @@ void ADC1_IRQHandler() {
       else if (y > 50) joystickDirection = UP;
       else joystickDirection = NEUTRAL;
 
-      snake[0].direction = joystickDirection;
+      // prevent 180 degree turns
+      if (gameState == RUNNING) {
+        switch (joystickDirection) {
+          case NEUTRAL:
+            break;
+          case UP:
+            if (snake[0].direction == DOWN) break;
+            snake[0].direction = joystickDirection;
+            break;
+          case RIGHT:
+            if (snake[0].direction == LEFT) break;
+            snake[0].direction = joystickDirection;
+            break;
+          case DOWN:
+            if (snake[0].direction == UP) break;
+            snake[0].direction = joystickDirection;
+            break;
+          case LEFT:
+            if (snake[0].direction == RIGHT) break;
+            snake[0].direction = joystickDirection;
+            break;
+          default:
+          break;
+        }
+      }
 
       // start new ADC conversion
       ADC1->CR |= ADC_CR_ADSTART;
@@ -167,13 +191,16 @@ void ADC1_IRQHandler() {
 }
 
 void initializeSnake() {
-  // set position and direction of beginning snake head and segment
+  // set position and direction of snake head and first two segments
   snake[0].x = NUM_X_CELLS / 2;
   snake[0].y = NUM_Y_CELLS / 2;
   snake[0].direction = UP;
   snake[1].x = snake[0].x;
   snake[1].y = snake[0].y + 1;
   snake[1].direction = snake[0].direction;
+  snake[2].x = snake[0].x;
+  snake[2].y = snake[1].y + 1;
+  snake[2].direction = snake[0].direction;
   
   // Generate first snack
   generateSnack();
@@ -238,140 +265,378 @@ void generateSnack() {
 void movementLogic() {
   // Return if game isn't running
   if(gameState != RUNNING) return;
-  
-  // Calculate new head position based on current head position
-  uint8_t newHeadX = snake[0].x;
-  uint8_t newHeadY = snake[0].y;
-  uint8_t oldDirection = snake[0].direction;
-  
-  // Update position based on current joystick direction
-  // joystickDirection i believe is already being updated by ADC1_IRQHandler
-  switch(joystickDirection) {
-  case UP:
-    if(oldDirection != DOWN) { // Prevent 180-degree turns
-      newHeadY = (newHeadY > 0) ? newHeadY - 1 : NUM_Y_CELLS - 1;
-      snake[0].direction = UP;
+
+  for (int i = 0; i < snakeLength && snakeLength < NUM_X_CELLS * NUM_Y_CELLS; i++) {
+    // snake head logic
+    if (i == 1) {
+      // update position, detect border collision, detect eating, detect winning, update gameboard
+      switch (snake[0].direction) {
+        case UP:
+          snake[0].y--;
+          if (snake[0].y < 0 || snake[0].y >= NUM_Y_CELLS) {  // border collision
+            gameState = GAMELOST;
+            playSound(LOST);
+            return;
+          }
+          if (gameboard[snake[0].x][snake[0].y] == SNACK) {  // eating detection
+            snakeLength++;
+            if (snakeLength >= NUM_X_CELLS * NUM_Y_CELLS) {  // winning detection
+              gameState = GAMEWON;
+              playSound(WON);
+              return;
+            }
+            playSound(EAT);
+            generateSnack();  // generate new snack
+          }
+          gameboard[snake[0].x][snake[0].y] = HEAD_UP; // update gameboard
+          break;
+        case DOWN:
+          snake[0].y++;
+          if (snake[0].y < 0 || snake[0].y >= NUM_Y_CELLS) {  // border collision
+            gameState = GAMELOST;
+            playSound(LOST);
+            return;
+          }
+          if (gameboard[snake[0].x][snake[0].y] == SNACK) {  // eating detection
+            snakeLength++;
+            if (snakeLength >= NUM_X_CELLS * NUM_Y_CELLS) {  // winning detection
+              gameState = GAMEWON;
+              playSound(WON);
+              return;
+            }
+            playSound(EAT);
+            generateSnack();  // generate new snack
+          }
+          gameboard[snake[0].x][snake[0].y] = HEAD_DOWN; // update gameboard
+          break;
+        case LEFT:
+          snake[0].x--;
+          if (snake[0].x < 0 || snake[0].x >= NUM_X_CELLS) {  // border collision
+            gameState = GAMELOST;
+            playSound(LOST);
+            return;
+          }
+          if (gameboard[snake[0].x][snake[0].y] == SNACK) {  // eating detection
+            snakeLength++;
+            if (snakeLength >= NUM_X_CELLS * NUM_Y_CELLS) {  // winning detection
+              gameState = GAMEWON;
+              playSound(WON);
+              return;
+            }
+            playSound(EAT);
+            generateSnack();  // generate new snack
+          }
+          gameboard[snake[0].x][snake[0].y] = HEAD_LEFT; // update gameboard
+          break;
+        case RIGHT:
+          snake[0].x++;
+          if (snake[0].x < 0 || snake[0].x >= NUM_X_CELLS) {  // border collision
+            gameState = GAMELOST;
+            playSound(LOST);
+            return;
+          }
+          if (gameboard[snake[0].x][snake[0].y] == SNACK) {  // eating detection
+            snakeLength++;
+            if (snakeLength >= NUM_X_CELLS * NUM_Y_CELLS) {  // winning detection
+              gameState = GAMEWON;
+              playSound(WON);
+              return;
+            }
+            playSound(EAT);
+            generateSnack();  // generate new snack
+          }
+          gameboard[snake[0].x][snake[0].y] = HEAD_RIGHT; // update gameboard
+          break;
+      }
     }
-    break;
-  case DOWN:
-    if(oldDirection != UP) {
-      newHeadY = (newHeadY + 1) % NUM_Y_CELLS;
-      snake[0].direction = DOWN;
+
+    // snake segment logic
+    else if (i > 0 && i != snakeLength - 1) {
+      // if new segment, initialize properly based on pieces ahead of it
+      if (snake[i].direction == NEUTRAL) {
+
+      }
+
+      // update position
+      switch (snake[i].direction) {
+        case UP:
+          snake[i].y--;
+          break;
+        case DOWN:
+          snake[i].y++;
+          break;
+        case LEFT:
+          snake[i].x--;
+          break;
+        case RIGHT:
+          snake[i].x++;
+          break;
+        default:
+          break;
+      }
+
+      // obtain last direction before updating it
+      int8_t lastDirection = snake[i].direction;
+
+      // update direction
+      if (snake[i].x - snake[i - 1].x > 0) {
+        snake[i].direction = LEFT;
+      } else {
+        snake[i].direction = RIGHT;
+      }
+      if (snake[i].y - snake[i - 1].y > 0) {
+        snake[i].direction = UP;
+      } else {
+        snake[i].direction = DOWN;
+      }
+
+      // update gameboard
+      switch (lastDirection) {
+        case UP:
+          switch (snake[i].direction) {
+            case UP:
+              gameboard[snake[i].x][snake[i].y] = SEGMENT_VER;
+              break;
+            case RIGHT:
+              gameboard[snake[i].x][snake[i].y] = BEND_RIGHT_DOWN;
+              break;
+            case LEFT:
+              gameboard[snake[i].x][snake[i].y] = BEND_LEFT_DOWN;
+              break;
+            default:
+              break;
+          }
+          break;
+        case DOWN:
+          switch (snake[i].direction) {
+            case DOWN:
+              gameboard[snake[i].x][snake[i].y] = SEGMENT_VER;
+              break;
+            case RIGHT:
+              gameboard[snake[i].x][snake[i].y] = BEND_RIGHT_UP;
+              break;
+            case LEFT:
+              gameboard[snake[i].x][snake[i].y] = BEND_LEFT_UP;
+              break;
+            default:
+              break;
+          }
+          break;
+        case RIGHT:
+          switch (snake[i].direction) {
+            case UP:
+              gameboard[snake[i].x][snake[i].y] = BEND_UP_LEFT;
+              break;
+            case DOWN:
+              gameboard[snake[i].x][snake[i].y] = BEND_DOWN_LEFT;
+              break;
+            case RIGHT:
+              gameboard[snake[i].x][snake[i].y] = SEGMENT_HOR;
+              break;
+            default:
+              break;
+          }
+          break;
+        case LEFT:
+          switch (snake[i].direction) {
+            case UP:
+              gameboard[snake[i].x][snake[i].y] = BEND_UP_RIGHT;
+              break;
+            case DOWN:
+              gameboard[snake[i].x][snake[i].y] = BEND_DOWN_RIGHT;
+              break;
+            case LEFT:
+              gameboard[snake[i].x][snake[i].y] = SEGMENT_HOR;
+              break;
+            default:
+              break;
+          }
+          break;
+      }
     }
-    break;
-  case LEFT:
-    if(oldDirection != RIGHT) {
-      newHeadX = (newHeadX > 0) ? newHeadX - 1 : NUM_X_CELLS - 1;
-      snake[0].direction = LEFT;
+
+    // snake tail logic
+    else {
+      // update position
+      switch (snake[i].direction) {
+        case UP:
+          snake[i].y--;
+          break;
+        case DOWN:
+          snake[i].y++;
+          break;
+        case LEFT:
+          snake[i].x--;
+          break;
+        case RIGHT:
+          snake[i].x++;
+          break;
+        default:
+          break;
+      }
+
+      // obtain last direction before updating it
+      int8_t lastDirection = snake[i].direction;
+
+      // update direction
+      if (snake[i].x - snake[i - 1].x > 0) {
+        snake[i].direction = LEFT;
+      } else {
+        snake[i].direction = RIGHT;
+      }
+      if (snake[i].y - snake[i - 1].y > 0) {
+        snake[i].direction = UP;
+      } else {
+        snake[i].direction = DOWN;
+      }
+
+      // update gameboard
+      
     }
-    break;
-  case RIGHT:
-    if(oldDirection != LEFT) {
-      newHeadX = (newHeadX + 1) % NUM_X_CELLS;
-      snake[0].direction = RIGHT;
-    }
-    break;
-  case NEUTRAL:
-    // Continue in current direction
-    switch(oldDirection) {
-      case UP:
-        newHeadY = (newHeadY > 0) ? newHeadY - 1 : NUM_Y_CELLS - 1;
-        break;
-      case DOWN:
-        newHeadY = (newHeadY + 1) % NUM_Y_CELLS;
-        break;
-      case LEFT:
-        newHeadX = (newHeadX > 0) ? newHeadX - 1 : NUM_X_CELLS - 1;
-        break;
-      case RIGHT:
-        newHeadX = (newHeadX + 1) % NUM_X_CELLS;
-        break;
-    }
-    break;
   }
-  
-  // Check for collision with self
-  for(int i = 1; i < snakeLength; i++) {
-    if(newHeadX == snake[i].x && newHeadY == snake[i].y) {
+
+  // now that full snake is updated, check for collision with self
+  for (int i = 0; i < snakeLength; i++) {
+    if (snake[0].x == snake[i].x && snake[0].y == snake[i].y) {
       gameState = GAMELOST;
       playSound(LOST);
       return;
     }
   }
   
-  // Check if snack was eaten
-  bool snackEaten = (gameboard[newHeadX][newHeadY] == SNACK);
+  // // Calculate new head position based on current head position
+  // uint8_t newHeadX = snake[0].x;
+  // uint8_t newHeadY = snake[0].y;
+  // uint8_t oldDirection = snake[0].direction;
   
-  // Store old positions for body movement
-  uint8_t prevX[MAX_SNAKE_LENGTH];
-  uint8_t prevY[MAX_SNAKE_LENGTH];
-  uint8_t prevDir[MAX_SNAKE_LENGTH];
+  // // Update position based on current joystick direction
+  // // joystickDirection i believe is already being updated by ADC1_IRQHandler
+  // switch(joystickDirection) {
+  // case UP:
+  //   if(oldDirection != DOWN) { // Prevent 180-degree turns
+  //     newHeadY = (newHeadY > 0) ? newHeadY - 1 : NUM_Y_CELLS - 1;
+  //     snake[0].direction = UP;
+  //   }
+  //   break;
+  // case DOWN:
+  //   if(oldDirection != UP) {
+  //     newHeadY = (newHeadY + 1) % NUM_Y_CELLS;
+  //     snake[0].direction = DOWN;
+  //   }
+  //   break;
+  // case LEFT:
+  //   if(oldDirection != RIGHT) {
+  //     newHeadX = (newHeadX > 0) ? newHeadX - 1 : NUM_X_CELLS - 1;
+  //     snake[0].direction = LEFT;
+  //   }
+  //   break;
+  // case RIGHT:
+  //   if(oldDirection != LEFT) {
+  //     newHeadX = (newHeadX + 1) % NUM_X_CELLS;
+  //     snake[0].direction = RIGHT;
+  //   }
+  //   break;
+  // case NEUTRAL:
+  //   // Continue in current direction
+  //   switch(oldDirection) {
+  //     case UP:
+  //       newHeadY = (newHeadY > 0) ? newHeadY - 1 : NUM_Y_CELLS - 1;
+  //       break;
+  //     case DOWN:
+  //       newHeadY = (newHeadY + 1) % NUM_Y_CELLS;
+  //       break;
+  //     case LEFT:
+  //       newHeadX = (newHeadX > 0) ? newHeadX - 1 : NUM_X_CELLS - 1;
+  //       break;
+  //     case RIGHT:
+  //       newHeadX = (newHeadX + 1) % NUM_X_CELLS;
+  //       break;
+  //   }
+  //   break;
+  // }
   
-  for(int i = 0; i < snakeLength; i++) {
-    prevX[i] = snake[i].x;
-    prevY[i] = snake[i].y;
-    prevDir[i] = snake[i].direction;
-    // Clear current position on gameboard
-    gameboard[snake[i].x][snake[i].y] = EMPTY;
-  }
+  // // Check for collision with self
+  // for(int i = 1; i < snakeLength; i++) {
+  //   if(newHeadX == snake[i].x && newHeadY == snake[i].y) {
+  //     gameState = GAMELOST;
+  //     playSound(LOST);
+  //     return;
+  //   }
+  // }
   
-  // Update head position
-  snake[0].x = newHeadX;
-  snake[0].y = newHeadY;
+  // // Check if snack was eaten
+  // bool snackEaten = (gameboard[newHeadX][newHeadY] == SNACK);
   
-  // Set head tile type based on direction
-  switch(snake[0].direction) {
-    case LEFT:
-      gameboard[newHeadX][newHeadY] = HEAD_LEFT;
-      break;
-    case RIGHT:
-      gameboard[newHeadX][newHeadY] = HEAD_RIGHT;
-      break;
-    case UP:
-      gameboard[newHeadX][newHeadY] = HEAD_UP;
-      break;
-    case DOWN:
-      gameboard[newHeadX][newHeadY] = HEAD_DOWN;
-      break;
-  }
+  // // Store old positions for body movement
+  // uint8_t prevX[MAX_SNAKE_LENGTH];
+  // uint8_t prevY[MAX_SNAKE_LENGTH];
+  // uint8_t prevDir[MAX_SNAKE_LENGTH];
   
-  // Update body segments
-  for(int i = 1; i < snakeLength; i++) {
-    snake[i].x = prevX[i-1];
-    snake[i].y = prevY[i-1];
-    snake[i].direction = prevDir[i-1];
+  // for(int i = 0; i < snakeLength; i++) {
+  //   prevX[i] = snake[i].x;
+  //   prevY[i] = snake[i].y;
+  //   prevDir[i] = snake[i].direction;
+  //   // Clear current position on gameboard
+  //   gameboard[snake[i].x][snake[i].y] = EMPTY;
+  // }
+  
+  // // Update head position
+  // snake[0].x = newHeadX;
+  // snake[0].y = newHeadY;
+  
+  // // Set head tile type based on direction
+  // switch(snake[0].direction) {
+  //   case LEFT:
+  //     gameboard[newHeadX][newHeadY] = HEAD_LEFT;
+  //     break;
+  //   case RIGHT:
+  //     gameboard[newHeadX][newHeadY] = HEAD_RIGHT;
+  //     break;
+  //   case UP:
+  //     gameboard[newHeadX][newHeadY] = HEAD_UP;
+  //     break;
+  //   case DOWN:
+  //     gameboard[newHeadX][newHeadY] = HEAD_DOWN;
+  //     break;
+  // }
+  
+  // // Update body segments
+  // for(int i = 1; i < snakeLength; i++) {
+  //   snake[i].x = prevX[i-1];
+  //   snake[i].y = prevY[i-1];
+  //   snake[i].direction = prevDir[i-1];
     
-    // Determine segment tile type
-    if(snake[i].direction == snake[i-1].direction) {
-      // Straight segment
-      gameboard[snake[i].x][snake[i].y] = (snake[i].direction == LEFT || snake[i].direction == RIGHT) ? SEGMENT_HOR : SEGMENT_VER;
-    } else {
-        // Bend segment
-        if((snake[i-1].direction == RIGHT && snake[i].direction == UP) || (snake[i-1].direction == DOWN && snake[i].direction == LEFT)) {
-          gameboard[snake[i].x][snake[i].y] = BEND_UP_LEFT;
-        } else if((snake[i-1].direction == RIGHT && snake[i].direction == DOWN) || (snake[i-1].direction == UP && snake[i].direction == LEFT)) {
-          gameboard[snake[i].x][snake[i].y] = BEND_DOWN_LEFT;
-        } else if((snake[i-1].direction == LEFT && snake[i].direction == UP) || (snake[i-1].direction == DOWN && snake[i].direction == RIGHT)) {
-          gameboard[snake[i].x][snake[i].y] = BEND_UP_RIGHT;
-        } else {
-          gameboard[snake[i].x][snake[i].y] = BEND_DOWN_RIGHT;
-        }
-      }
-  }
+  //   // Determine segment tile type
+  //   if(snake[i].direction == snake[i-1].direction) {
+  //     // Straight segment
+  //     gameboard[snake[i].x][snake[i].y] = (snake[i].direction == LEFT || snake[i].direction == RIGHT) ? SEGMENT_HOR : SEGMENT_VER;
+  //   } else {
+  //       // Bend segment
+  //       if((snake[i-1].direction == RIGHT && snake[i].direction == UP) || (snake[i-1].direction == DOWN && snake[i].direction == LEFT)) {
+  //         gameboard[snake[i].x][snake[i].y] = BEND_UP_LEFT;
+  //       } else if((snake[i-1].direction == RIGHT && snake[i].direction == DOWN) || (snake[i-1].direction == UP && snake[i].direction == LEFT)) {
+  //         gameboard[snake[i].x][snake[i].y] = BEND_DOWN_LEFT;
+  //       } else if((snake[i-1].direction == LEFT && snake[i].direction == UP) || (snake[i-1].direction == DOWN && snake[i].direction == RIGHT)) {
+  //         gameboard[snake[i].x][snake[i].y] = BEND_UP_RIGHT;
+  //       } else {
+  //         gameboard[snake[i].x][snake[i].y] = BEND_DOWN_RIGHT;
+  //       }
+  //     }
+  // }
   
-  if(snackEaten) {
-    // Increase snake length and adjust speed
-    if(snakeLength < MAX_SNAKE_LENGTH) {
-      snakeLength++;
-      if(snakeSpeed > MIN_SNAKE_SPEED) {
-        snakeSpeed -= SPEED_INCREASE;
-        // Update timer period
-        TIM3->ARR = snakeSpeed;
-      }
-      playSound(EAT); // Play snack eaten sound
-      generateSnack(); // Generate new snack
-    }
-  }
+  // if(snackEaten) {
+  //   // Increase snake length and adjust speed
+  //   if(snakeLength < MAX_SNAKE_LENGTH) {
+  //     snakeLength++;
+  //     if(snakeSpeed > MIN_SNAKE_SPEED) {
+  //       snakeSpeed -= SPEED_INCREASE;
+  //       // Update timer period
+  //       TIM3->ARR = snakeSpeed;
+  //     }
+  //     playSound(EAT); // Play snack eaten sound
+  //     generateSnack(); // Generate new snack
+  //   }
+  // }
   
   // Update the game display
   updateLCDDisplay();

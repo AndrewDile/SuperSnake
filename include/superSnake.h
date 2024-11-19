@@ -69,11 +69,11 @@ extern uint16_t purple;
 extern uint16_t orange;
 
 // direction constants for code readability and standardization
-#define NEUTRAL -1
-#define RIGHT 0
-#define LEFT 1
-#define UP 2
-#define DOWN 3
+#define NEUTRAL 0
+#define RIGHT 1
+#define LEFT 2
+#define UP 3
+#define DOWN 4
 
 // game state constants for code readability and standardization
 #define IDLE 0
@@ -90,7 +90,7 @@ extern uint16_t orange;
 #define HEAD_DOWN 5
 #define SEGMENT_VER 6
 #define SEGMENT_HOR 7
-#define BEND_UP_RIGHT 8
+#define BEND_UP_RIGHT 8  // directions signify where the cell is connected to the snake segments (BEND_UP_RIGHT means the segment connects to a segments above and to the right)
 #define BEND_UP_LEFT 9
 #define BEND_DOWN_RIGHT 10
 #define BEND_DOWN_LEFT 11
@@ -98,7 +98,7 @@ extern uint16_t orange;
 #define BEND_RIGHT_DOWN BEND_DOWN_RIGHT
 #define BEND_LEFT_UP BEND_UP_LEFT
 #define BEND_LEFT_DOWN BEND_DOWN_LEFT
-#define TAIL_LEFT 12
+#define TAIL_LEFT 12  // direction signifies which way the tail connects to snake (TAIL_UP means next segment is above)
 #define TAIL_RIGHT 13
 #define TAIL_UP 14
 #define TAIL_DOWN 15
@@ -111,7 +111,7 @@ extern uint16_t orange;
 
 // constants for snake and movement
 #define INITIAL_SNAKE_SPEED 500  // milliseconds between speed
-#define INITIAL_SNAKE_LENGTH 2  // segments including head
+#define INITIAL_SNAKE_LENGTH 3  // segments including head
 #define MAX_SNAKE_LENGTH (NUM_X_CELLS * NUM_Y_CELLS)
 #define MIN_SNAKE_SPEED 100      // maximum speed (minimum delay)
 #define SPEED_INCREASE 25        // ms faster per snack eaten
@@ -120,8 +120,8 @@ extern uint16_t orange;
 
 // each segment of the snake needs a position and a direction value
 struct segment {
-  uint8_t x; // horizontal gametile position -- left = 0
-  uint8_t y; // vertical gametile position -- bottom = 0
+  int8_t x; // horizontal gametile position -- left = 0
+  int8_t y; // vertical gametile position -- bottom = 0
   uint8_t direction; // direction current segment (or head) is facing
 };
 
@@ -131,7 +131,7 @@ typedef struct segment segment;
 // exteral variables declared so other files to access
 extern int8_t gameState;  // game over can be derived from this
 extern int8_t lastGameState;
-extern uint8_t gameboard[NUM_X_CELLS][NUM_Y_CELLS];
+extern int8_t gameboard[NUM_X_CELLS][NUM_Y_CELLS];
 extern segment snake[NUM_X_CELLS * NUM_Y_CELLS];
 extern int8_t snakeLength; // current score can be derived from this
 extern uint32_t snakeSpeed;
