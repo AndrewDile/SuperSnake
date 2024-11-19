@@ -255,14 +255,16 @@ void init_spi1_slow() {
     GPIOB->AFR[0] &= ~(GPIO_AFRL_AFSEL3 | GPIO_AFRL_AFSEL4 | GPIO_AFRL_AFSEL5);
     GPIOB->AFR[0] |= (0x00 << GPIO_AFRL_AFSEL3_Pos) | (0x00 << GPIO_AFRL_AFSEL4_Pos) | (0x00 << GPIO_AFRL_AFSEL5_Pos);
 
-    SPI1->CR1 = 0;
-    SPI1->CR2 = 0;
+    // SPI1->CR1 = 0;
+    // SPI1->CR2 = 0;
+    SPI1->CR1 &= ~SPI_CR1_SPE;
 
-    SPI1->CR1 |= (0b111 << SPI_CR1_BR_Pos);
-    SPI1->CR2 |= SPI_CR1_MSTR | SPI_CR1_SSM | SPI_CR1_SSI;
+    SPI1->CR1 |= SPI_CR1_BR; //(0b111 << SPI_CR1_BR_Pos);
+    SPI1->CR1 |= SPI_CR1_MSTR | SPI_CR1_SSM | SPI_CR1_SSI;
 
-    SPI2->CR2 |= (0b111 << SPI_CR2_DS_Pos);
-    SPI2->CR2 |= SPI_CR2_FRXTH;
+    SPI1->CR2 |= SPI_CR2_DS; //(0b111 << SPI_CR2_DS_Pos);
+    SPI1->CR2 &= ~(SPI_CR2_DS_3);
+    SPI1->CR2 |= SPI_CR2_FRXTH;
 
     SPI1->CR1 |= SPI_CR1_SPE;
 }
