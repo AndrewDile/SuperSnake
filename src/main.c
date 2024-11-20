@@ -10,8 +10,6 @@
 #include "superSnake.h"
 #include "helper.h"
 
-
-
 int main() {
   // set ups
   internal_clock();
@@ -25,24 +23,10 @@ int main() {
 
   init_spi1();
   spi1_init_oled();
-  spi1_setup_dma();
-  spi1_enable_dma();
-  
-  spi1_dma_display1();
-  spi1_dma_display2();
-
 
   //test oled
-  spi1_dma_display1("snake");
-    spi1_dma_display2("game");
-
-
-  gameboard[5][5] = BEND_DOWN_RIGHT;
-  gameboard[6][5] = BEND_DOWN_LEFT;
-  gameboard[5][6] = BEND_UP_RIGHT;
-  gameboard[6][6] = BEND_UP_LEFT;
-
-  gameboard[0][19] = HEAD_UP;
+  spi1_dma_display1("where r u");
+  spi1_dma_display2("will");
 
   // loop part of game
   while (true) {

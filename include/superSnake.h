@@ -25,17 +25,9 @@
 //  PA7 pin 14 SDI->SPI
 //  PA15 pin 16 nCS ->SPI
 //  
-//  PC0  as GPIO -- LcdRS
-//  PC1  as GPIO -- LcdRW
-//  PC2  as GPIO -- LcdE
-//  PC3  as GPIO -- LcdDb0
-//  PC4  as GPIO -- LcdDb1
-//  PC5  as GPIO -- LcdDb2
-//  PC6  as GPIO -- LcdDb3
-//  PC7  as GPIO -- LcdDb4
-//  PC8  as GPIO -- LcdDb5
-//  PC9  as GPIO -- LcdDb6
-//  PC10 as GPIO -- LcdDb7
+//  PB12  as SPI2 -- NSS
+//  PB15  as SPI2 -- MOSI
+//  PB13  as SPI2 -- SCK
 //
 //  Using Lab7 Pin Schematic For
 //    TFT Display and SD Card
@@ -171,3 +163,6 @@ void spi_cmd(unsigned int data);
 void spi_data(unsigned int data);
 void oled_write_string(const char* str, int line);
 void update_oled_display(void);
+void spi_cmd();
+void spi1_dma_display1(const char*);
+void spi1_dma_display2(const char*);
