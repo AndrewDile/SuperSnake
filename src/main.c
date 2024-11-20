@@ -22,8 +22,7 @@ int main() {
   enableDMA();
   // setupJoystick();
   //for oled
-<<<<<<< Updated upstream
-=======
+
   init_spi1();
   spi1_init_oled();
   spi1_setup_dma();
@@ -44,7 +43,6 @@ int main() {
   gameboard[6][6] = BEND_UP_LEFT;
 
   gameboard[0][19] = HEAD_UP;
->>>>>>> Stashed changes
 
   // loop part of game
   while (true) {
@@ -52,9 +50,4 @@ int main() {
 
     updateJoystick();
   }
-<<<<<<< Updated upstream
 }
-=======
-}
-
->>>>>>> Stashed changes
