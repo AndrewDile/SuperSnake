@@ -8,59 +8,61 @@ void nano_wait(unsigned int n) {
 }
 
 void init_oled_gpio(void) {
-    // Enable GPIOA and GPIOB clocks
-    RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN;
+    RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
     
-    // PA4=RS(4), PA5=E(6) as outputs
-    GPIOA->MODER |= (1<<8) | (1<<10);
-    
-    // PB0-7 as outputs for DB0-DB7(7-14)
-    GPIOB->MODER |= 0x5555;
+    // Configure PC0-PC10 as outputs
+    // Set pairs of bits to 01 for output mode
+    GPIOC->MODER |= 0x155555;    // Sets PC0-PC10 to output mode
 }
 
 void write_cmd(uint8_t cmd) {
-    GPIOA->ODR &= ~(1<<4);    // RS = 0 for command
-    GPIOB->ODR = cmd;         // Put command on data bus
+    // RS = 0 (PC0) for command
+    GPIOC->ODR &= ~(1<<0);
+    // RW = 0 (PC1) for write
+    GPIOC->ODR &= ~(1<<1);
     
-    // Generate E pulse
-    GPIOA->ODR |= (1<<5);     // E = 1
-    nano_wait(500);           // Wait >450ns
-    GPIOA->ODR &= ~(1<<5);    // E = 0
-    nano_wait(600000);        // Wait >600us for command completion
+    // Put command on data bus (PC3-PC10)
+    GPIOC->ODR = (GPIOC->ODR & ~(0xFF << 3)) | (cmd << 3);
+    
+    // Generate E pulse (PC2)
+    GPIOC->ODR |= (1<<2);
+    nano_wait(500);
+    GPIOC->ODR &= ~(1<<2);
+    nano_wait(100000);
 }
 
 void write_data(uint8_t data) {
-    GPIOA->ODR |= (1<<4);     // RS = 1 for data
-    GPIOB->ODR = data;        // Put data on data bus
+    // RS = 1 for data
+    GPIOC->ODR |= (1<<0);
+    // RW = 0 for write
+    GPIOC->ODR &= ~(1<<1);
+    
+    // Put data on data bus (PC3-PC10)
+    GPIOC->ODR = (GPIOC->ODR & ~(0xFF << 3)) | (data << 3);
     
     // Generate E pulse
-    GPIOA->ODR |= (1<<5);     // E = 1
-    nano_wait(500);           // Wait >450ns
-    GPIOA->ODR &= ~(1<<5);    // E = 0
-    nano_wait(600000);        // Wait >600us for data completion
+    GPIOC->ODR |= (1<<2);
+    nano_wait(500);
+    GPIOC->ODR &= ~(1<<2);
+    nano_wait(100000);
 }
 
 void init_oled(void) {
     nano_wait(50000000);      // Wait >40ms after power up
     
     write_cmd(0x38);          // Function Set: 8-bit, 2-line, 5x8 dots
-    nano_wait(50000);
-    
     write_cmd(0x08);          // Display off
-    nano_wait(50000);
-    
     write_cmd(0x01);          // Clear display
     nano_wait(2000000);       // Clear needs 2ms
-    
     write_cmd(0x06);          // Entry mode set: increment, no shift
-    nano_wait(50000);
-    
     write_cmd(0x0C);          // Display ON, no cursor
-    nano_wait(50000);
 }
 
 void oled_write_string(const char* str, int line) {
-    write_cmd(line ? 0xC0 : 0x80);  // Set line 1 or 2 position
+    // Set cursor to beginning of specified line
+    write_cmd(line ? 0xC0 : 0x80);
+    
+    // Write each character
     while(*str) write_data(*str++);
 }
 
