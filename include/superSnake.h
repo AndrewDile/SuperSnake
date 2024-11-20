@@ -22,17 +22,9 @@
 //  PA2  as ADC2 -- JoystickY
 //  PA3  as GPIO -- JoystickSw
 //  
-//  PC0  as GPIO -- LcdRS
-//  PC1  as GPIO -- LcdRW
-//  PC2  as GPIO -- LcdE
-//  PC3  as GPIO -- LcdDb0
-//  PC4  as GPIO -- LcdDb1
-//  PC5  as GPIO -- LcdDb2
-//  PC6  as GPIO -- LcdDb3
-//  PC7  as GPIO -- LcdDb4
-//  PC8  as GPIO -- LcdDb5
-//  PC9  as GPIO -- LcdDb6
-//  PC10 as GPIO -- LcdDb7
+//  PC0  as GPIO -- OLED_NCS (PA15 replacement)
+//  PC1  as GPIO -- OLED_SDI (PA7 repacement)
+//  PC2  as GPIO -- OLED_SCL (PA5 replacement)
 //
 //  Using Lab7 Pin Schematic For
 //    TFT Display and SD Card
@@ -159,3 +151,8 @@ void movementLogic();
 void gameStateHandler();
 void playSound(uint8_t);
 void ateSnack();
+
+// oled functions
+void init_oled_gpio();
+void init_oled();
+oled_write_two_lines(const char*, const char*);
