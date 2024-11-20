@@ -52,8 +52,8 @@ void setupLCDDisplay() {
 
 // function that updates LCD display
 void updateLCDDisplay() {
-  for (int x = 0; x <= NUM_X_CELLS; x++) {
-    for (int y = 0; y <= NUM_Y_CELLS; y++) {
+  for (int x = 0; x < NUM_X_CELLS; x++) {
+    for (int y = 0; y < NUM_Y_CELLS; y++) {
       switch (gameboard[x][y]) {
       case EMPTY:
         LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), black);
@@ -110,66 +110,42 @@ void updateLCDDisplay() {
 // function to initialize ADC for joystick readings
 
 void setupJoystick() {
-
   // enable RCC clocks, port A, and pins
-
   RCC->APB2ENR |= RCC_APB2ENR_ADCEN;
-
   RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
-
   GPIOA->MODER |= 0xF;
 
-
-  RCC->CR2 |= RCC_CR2_HSI14ON; //enable highspeed 14MHz
-
-  while (!(RCC->CR2 & RCC_CR2_HSI14RDY)); //wait
-
+  RCC->CR2 |= RCC_CR2_HSI14ON; // enable highspeed 14MHz
+  while (!(RCC->CR2 & RCC_CR2_HSI14RDY)); // wait
 
   // set resolution to 6 bits
-
   ADC1->CFGR1 &= ~ADC_CFGR1_RES;
-
   ADC1->CFGR1 |= ADC_CFGR1_RES_1;
 
-
   // configure ADC to only do a conversion after the last value has been read
-
   ADC1->CFGR1 |= ADC_CFGR1_WAIT;
 
-
  // enable ADC peripheral and wait for it to be ready
-
   ADC1->CR |= ADC_CR_ADEN;
-
   while (!(ADC1->ISR & ADC_ISR_ADRDY));
-
   while((ADC1->CR & ADC_CR_ADSTART));
 
-
   // select channels 0 and 1 (PA0 for JoystickX, PA1 for JoystickY)
-
   ADC1->CHSELR = ADC_CHSELR_CHSEL0 | ADC_CHSELR_CHSEL1;
 
-
   // enable end of conversion interrupt
-
   ADC1->IER |= ADC_IER_EOCIE;
 
-
   // start conversion
-
   ADC1->CR |= ADC_CR_ADSTART;
 
-
   // enable ADC interrupt in NVIC
-
   NVIC_EnableIRQ(ADC1_IRQn);
 }
 
 void updateJoystick() {
   int8_t ADCReading = ADC1->DR;
   // read values sequentially
-
   if(joystickXraw == -1) {
     joystickXraw = ADCReading;
 
@@ -208,35 +184,24 @@ void updateJoystick() {
         break;
       }
     }
+
     joystickXraw = -1;
     joystickYraw = -1;
   }
 }
 
-
 void setupDMA(){
-
   RCC->AHBENR |= RCC_AHBENR_DMA1EN;
-
   ADC1->CFGR1 |= ADC_CFGR1_DMAEN | ADC_CFGR1_DMACFG;
-
   DMA1_Channel1->CPAR = (uint32_t) (&(ADC1->DR));
-
   DMA1_Channel1->CMAR = (uint32_t)(joystickDirection);
-
   DMA1_Channel1->CNDTR = 2;
-
   DMA1_Channel1->CCR |= DMA_CCR_MINC | DMA_CCR_MSIZE_0 | DMA_CCR_PSIZE_0 | DMA_CCR_TEIE | DMA_CCR_CIRC;
-
   DMA1_Channel1->CCR |= DMA_CCR_EN;
-
 }
 
-
 void enableDMA(void){
-
   DMA1_Channel1->CCR |= DMA_CCR_EN;
-
 }
 
 void initializeSnake() {
@@ -318,6 +283,11 @@ void generateSnack() {
 void movementLogic() {
   // Return if game isn't running
   if(gameState != RUNNING) return;
+
+  // variable to keep track of last directions
+  int8_t lastDirection;
+  int8_t lastX;
+  int8_t lastY;
 
   for (int i = 0; i < snakeLength && snakeLength < NUM_X_CELLS * NUM_Y_CELLS; i++) {
     // snake head logic
@@ -409,10 +379,16 @@ void movementLogic() {
 
     // snake segment logic
     else if (i > 0 && i != snakeLength - 1) {
-      // if new segment, initialize properly based on pieces ahead of it
+      // if new segment, initialize position and direction based on the last values of next segment
       if (snake[i].direction == NEUTRAL) {
-
+        snake[i].x = lastX;
+        snake[i].y = lastY;
+        snake[i].direction = lastDirection;
       }
+
+      // save last position before updating it
+      lastX = snake[i].x;
+      lastY = snake[i].y;
 
       // update position
       switch (snake[i].direction) {
@@ -432,8 +408,8 @@ void movementLogic() {
           break;
       }
 
-      // obtain last direction before updating it
-      int8_t lastDirection = snake[i].direction;
+      // save last direction before updating it
+      lastDirection = snake[i].direction;
 
       // update direction
       if (snake[i].x - snake[i - 1].x > 0) {
@@ -509,6 +485,8 @@ void movementLogic() {
               break;
           }
           break;
+        default:
+          break;
       }
     }
 
@@ -532,9 +510,6 @@ void movementLogic() {
           break;
       }
 
-      // obtain last direction before updating it
-      int8_t lastDirection = snake[i].direction;
-
       // update direction
       if (snake[i].x - snake[i - 1].x > 0) {
         snake[i].direction = LEFT;
@@ -548,7 +523,22 @@ void movementLogic() {
       }
 
       // update gameboard
-      
+      switch (snake[i].direction) {
+        case UP:
+          gameboard[snake[i].x][snake[i].y] = TAIL_UP;
+          break;
+        case DOWN:
+          gameboard[snake[i].x][snake[i].y] = TAIL_DOWN;
+          break;
+        case RIGHT:
+          gameboard[snake[i].x][snake[i].y] = TAIL_RIGHT;
+          break;
+        case LEFT:
+          gameboard[snake[i].x][snake[i].y] = TAIL_LEFT;
+          break;
+        default:
+          break;
+      }
     }
   }
 
