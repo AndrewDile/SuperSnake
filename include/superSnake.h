@@ -21,6 +21,9 @@
 //  PA1  as ADC1 -- JoystickX
 //  PA2  as ADC2 -- JoystickY
 //  PA3  as GPIO -- JoystickSw
+//  PA5 OLED pin 12 SCL->SPI
+//  PA7 pin 14 SDI->SPI
+//  PA15 pin 16 nCS ->SPI
 //  
 //  PC0  as GPIO -- LcdRS
 //  PC1  as GPIO -- LcdRW
@@ -29,10 +32,13 @@
 //  PC4  as GPIO -- LcdDb1
 //  PC5  as GPIO -- LcdDb2
 //  PC6  as GPIO -- LcdDb3
-//  PC7  as GPIO -- LcdDb4
-//  PC8  as GPIO -- LcdDb5
-//  PC9  as GPIO -- LcdDb6
+//  PC7  as GPIO -- 
+//  PC8  as GPIO -- 
+//  PC9  as GPIO -- 
 //  PC10 as GPIO -- LcdDb7
+//  PA8 as TIM_CH1 of LED
+//  PA9 as TIM_CH2 of LED
+//  PA10 as TIM_CH3 of LED 
 //
 //  Using Lab7 Pin Schematic For
 //    TFT Display and SD Card
