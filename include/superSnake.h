@@ -26,8 +26,8 @@
 //  PA15 pin 16 nCS ->SPI
 //  
 //  PB12  as SPI2 -- NSS
-//  PB15  as SPI2 -- MOSI
 //  PB13  as SPI2 -- SCK
+//  PB15  as SPI2 -- MOSI
 //
 //  Using Lab7 Pin Schematic For
 //    TFT Display and SD Card

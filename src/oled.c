@@ -3,13 +3,10 @@
 #include "tty.h"
 
 void init_spi1() {
-  RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
-  RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
+  RCC->AHBENR |= RCC_AHBENR_GPIOBEN;
+  RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
 
-  GPIOA->MODER = (GPIOA->MODER & ~((3 << (5*2)) | (3 << (6*2)) | (3 << (7*2)) | (3 << (15*2)))) | (2 << (5*2)) | (2 << (6*2)) | (2 << (7*2)) | (2 << (15*2));
-
-  GPIOA->AFR[0] = (GPIOA->AFR[0] & ~((0xF << (5*4)) | (0xF << (6*4)) | (0xF << (7*4)))) | (0 << (5*4)) | (0 << (6*4)) | (0 << (7*4));
-  GPIOA->AFR[1] = (GPIOA->AFR[1] & ~(0xF << ((15-8)*4))) | (0 << ((15-8)*4));
+  GPIOB->MODER = GPIO_MODER_MODER12_Msk | GPIO_MODER_MODER13_Msk | GPIO_MODER_MODER15_Msk;
 
   SPI2->CR1 = (SPI2->CR1 & ~(SPI_CR1_SPE | SPI_CR1_BR)) | SPI_CR1_MSTR | SPI_CR1_BR_2 | SPI_CR1_BR_1 | SPI_CR1_BR_0;
   SPI2->CR2 = (SPI2->CR2 & ~(SPI_CR2_DS)) | SPI_CR2_DS_0 | SPI_CR2_DS_3 | SPI_CR2_SSOE | SPI_CR2_NSSP | SPI_CR2_TXDMAEN;
@@ -25,7 +22,6 @@ uint16_t display[34] = {
   0x200+'c', 0x200+'l', 0x200+'a', 0x200+'s', 0x200+'s', + 0x200+' ', 0x200+'f', 0x200+'o',
   0x200+'r', 0x200+' ', 0x200+'y', 0x200+'o', + 0x200+'u', 0x200+'!', 0x200+' ', 0x200+' ',
 };
-
 
 void spi1_init_oled() {
   nano_wait(1000000);
@@ -52,7 +48,6 @@ void spi1_setup_dma(void) {
 void spi1_enable_dma(void) {
   DMA1_Channel3->CCR |= DMA_CCR_EN;  
 }
-
 
 void spi1_dma_display1(const char *str) {
   for(int i=0; i<16; i++) {
@@ -82,7 +77,7 @@ void spi1_dma_display2(const char *str)
 }
 
 void spi_cmd(unsigned int data) {
-  // while(!(SPI2->SR & SPI_SR_TXE));
+  while(!(SPI2->SR & SPI_SR_TXE));
   SPI2->DR = data;                 // RS=0
 }
 
