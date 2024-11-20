@@ -42,6 +42,7 @@ uint16_t blue = 31;
 uint16_t yellow = 65504;
 uint16_t purple = 30735;
 uint16_t orange = 64512;
+uint16_t uhh = 64300;
 
 // set up LCD display to be communicated with
 void setupLCDDisplay() {
@@ -54,55 +55,54 @@ void setupLCDDisplay() {
 void updateLCDDisplay() {
   for (int x = 0; x < NUM_X_CELLS; x++) {
     for (int y = 0; y < NUM_Y_CELLS; y++) {
-      LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), black);
-      
       switch (gameboard[x][y]) {
       case EMPTY:
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), black);
         break;
       case SNACK:
         LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 2, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 2, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 4, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 4, green);
         break;
       case HEAD_LEFT:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 1, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 2, red);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), purple);
         break;
       case HEAD_RIGHT:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 1, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 2, red);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), purple);
         break;
       case HEAD_UP:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 1, red);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), purple);
         break;
       case HEAD_DOWN:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 1, red);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), purple);
         break;
       case SEGMENT_VER:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), uhh);
         break;
       case SEGMENT_HOR:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 2, orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), uhh);
         break;
       case BEND_UP_RIGHT:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), uhh);
         break;
       case BEND_UP_LEFT:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), uhh);
         break;
       case BEND_DOWN_RIGHT:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), uhh);
         break;
       case BEND_DOWN_LEFT:
-        
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), uhh);
         break;
       case TAIL_UP:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 1, orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), uhh);
         break;
       case TAIL_DOWN:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 1, orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), uhh);
         break;
       case TAIL_RIGHT:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 1, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 2, orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), uhh);
         break;
       case TAIL_LEFT:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 1, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 2, orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), uhh);
         break;
       default:
         break;
