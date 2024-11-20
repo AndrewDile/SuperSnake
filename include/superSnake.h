@@ -164,6 +164,10 @@ void playSound(uint8_t);
 void ateSnack();
 
 // oled functions
-void init_oled_gpio();
-void init_oled();
-oled_write_two_lines(const char*, const char*);
+
+void init_spi1(void);
+void spi1_init_oled(void);
+void spi_cmd(unsigned int data);
+void spi_data(unsigned int data);
+void oled_write_string(const char* str, int line);
+void update_oled_display(void);
