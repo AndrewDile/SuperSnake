@@ -118,8 +118,8 @@ extern uint16_t orange;
 
 // constants for ability (more abilities probably need to be added)
 #define NONE 0
-#define SPEED_INCREASE 1
-#define SPEED_DECREASE 2
+#define INCREASE_SPEED 1
+#define DECREASE_SPEED 2
 #define PAUSE 3
 
 #define PWM_MAX 2400
