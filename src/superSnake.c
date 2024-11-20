@@ -30,8 +30,8 @@ int8_t joystickDirection = NEUTRAL;
 int8_t joystickXraw = -1;
 int8_t joystickYraw = -1;
 
-// flag for some code to only run on first cycle
-bool initialized = false;
+// variable for ability
+int8_t ability = NONE;
 
 // color values
 uint16_t white = 65535;
@@ -604,7 +604,8 @@ void playSound(uint8_t song) {
   TIM3->CCR1 = TIM3->ARR / 2; //maintains 50% cycle 
 }
 
-// 
+// chance for snack to update ability variable to new value
+// also calls for LED color change or turns off if needed
 void ateSnack() {
 
 }

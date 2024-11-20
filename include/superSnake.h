@@ -116,6 +116,12 @@ extern uint16_t orange;
 #define MIN_SNAKE_SPEED 100      // maximum speed (minimum delay)
 #define SPEED_INCREASE 25        // ms faster per snack eaten
 
+// constants for ability (more abilities probably need to be added)
+#define NONE 0
+#define SPEED_INCREASE 1
+#define SPEED_DECREASE 2
+#define PAUSE 3
+
 #define PWM_MAX 2400
 
 // each segment of the snake needs a position and a direction value
