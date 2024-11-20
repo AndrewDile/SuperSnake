@@ -54,24 +54,25 @@ void setupLCDDisplay() {
 void updateLCDDisplay() {
   for (int x = 0; x < NUM_X_CELLS; x++) {
     for (int y = 0; y < NUM_Y_CELLS; y++) {
+      LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), black);
+      
       switch (gameboard[x][y]) {
       case EMPTY:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), black);
         break;
       case SNACK:
         LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 2, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 2, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 4, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 4, green);
         break;
       case HEAD_LEFT:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 1, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 2, red);
         break;
       case HEAD_RIGHT:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 1, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 2, red);
         break;
       case HEAD_UP:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 1, red);
         break;
       case HEAD_DOWN:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 1, red);
         break;
       case SEGMENT_VER:
         LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
@@ -80,16 +81,28 @@ void updateLCDDisplay() {
         LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 2, orange);
         break;
       case BEND_UP_RIGHT:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
+        
         break;
       case BEND_UP_LEFT:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
+        
         break;
       case BEND_DOWN_RIGHT:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
+        
         break;
       case BEND_DOWN_LEFT:
-        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH), (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH), orange);
+        
+        break;
+      case TAIL_UP:
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y), ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 1, orange);
+        break;
+      case TAIL_DOWN:
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 2, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 1, orange);
+        break;
+      case TAIL_RIGHT:
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x) + 1, Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 1, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 2, orange);
+        break;
+      case TAIL_LEFT:
+        LCD_DrawFillRectangle((CELL_PIXEL_WIDTH * x), Y_BORDER + (CELL_PIXEL_WIDTH * y) + 1, ((CELL_PIXEL_WIDTH * x) + CELL_PIXEL_WIDTH) - 1, (Y_BORDER + (CELL_PIXEL_WIDTH * y) + CELL_PIXEL_WIDTH) - 2, orange);
         break;
       default:
         break;
@@ -218,7 +231,7 @@ void initializeSnake() {
 
   gameboard[snake[0].x][snake[0].y] = HEAD_UP;
   gameboard[snake[1].x][snake[1].y] = SEGMENT_VER;
-  gameboard[snake[2].x][snake[2].y] = SEGMENT_VER;
+  gameboard[snake[2].x][snake[2].y] = TAIL_UP;
   
   // Generate first snack
   generateSnack();
@@ -289,9 +302,9 @@ void movementLogic() {
   int8_t lastX;
   int8_t lastY;
 
-  for (int i = 0; i < snakeLength && snakeLength < NUM_X_CELLS * NUM_Y_CELLS; i++) {
+  for (int i = 0; i <= snakeLength && snakeLength < NUM_X_CELLS * NUM_Y_CELLS; i++) {
     // snake head logic
-    if (i == 1) {
+    if (i == 0) {
       // update position, detect border collision, detect eating, detect winning, update gameboard
       switch (snake[0].direction) {
         case UP:
@@ -378,7 +391,7 @@ void movementLogic() {
     }
 
     // snake segment logic
-    else if (i > 0 && i != snakeLength - 1) {
+    else if (i > 0 && i < snakeLength - 1) {
       // if new segment, initialize position and direction based on the last values of next segment
       if (snake[i].direction == NEUTRAL) {
         snake[i].x = lastX;
@@ -491,7 +504,11 @@ void movementLogic() {
     }
 
     // snake tail logic
-    else {
+    else if (i == snakeLength - 1) {
+      // save last position before updating it
+      lastX = snake[i].x;
+      lastY = snake[i].y;
+
       // update position
       switch (snake[i].direction) {
         case UP:
@@ -509,6 +526,9 @@ void movementLogic() {
         default:
           break;
       }
+
+      // save last direction before updating it
+      lastDirection = snake[i].direction;
 
       // update direction
       if (snake[i].x - snake[i - 1].x > 0) {
@@ -539,6 +559,11 @@ void movementLogic() {
         default:
           break;
       }
+    }
+
+    // last cycle clears where tail was on gameboard
+    else {
+      gameboard[lastX][lastY] = EMPTY;
     }
   }
 

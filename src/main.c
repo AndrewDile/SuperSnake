@@ -20,6 +20,13 @@ int main() {
   enableDMA();
   // setupJoystick();
 
+  gameboard[5][5] = BEND_DOWN_RIGHT;
+  gameboard[6][5] = BEND_DOWN_LEFT;
+  gameboard[5][6] = BEND_UP_RIGHT;
+  gameboard[6][6] = BEND_UP_LEFT;
+
+  gameboard[0][19] = HEAD_UP;
+
   // loop part of game
   while (true) {
     updateLCDDisplay();
