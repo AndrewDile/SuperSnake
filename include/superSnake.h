@@ -32,13 +32,10 @@
 //  PC4  as GPIO -- LcdDb1
 //  PC5  as GPIO -- LcdDb2
 //  PC6  as GPIO -- LcdDb3
-//  PC7  as GPIO -- 
-//  PC8  as GPIO -- 
-//  PC9  as GPIO -- 
+//  PC7  as GPIO -- LcdDb4
+//  PC8  as GPIO -- LcdDb5
+//  PC9  as GPIO -- LcdDb6
 //  PC10 as GPIO -- LcdDb7
-//  PA8 as TIM_CH1 of LED
-//  PA9 as TIM_CH2 of LED
-//  PA10 as TIM_CH3 of LED 
 //
 //  Using Lab7 Pin Schematic For
 //    TFT Display and SD Card
@@ -165,3 +162,8 @@ void movementLogic();
 void gameStateHandler();
 void playSound(uint8_t);
 void ateSnack();
+
+// oled functions
+void init_oled_gpio();
+void init_oled();
+oled_write_two_lines(const char*, const char*);

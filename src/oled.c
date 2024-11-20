@@ -1,11 +1,11 @@
 #include "stm32f0xx.h"
 
-void nano_wait(unsigned int n) {
-    asm(    "        mov r0,%0\n"
-            "repeat: sub r0,#83\n"
-            "        bgt repeat\n" 
-            : : "r"(n) : "r0", "cc");
-}
+// void nano_wait(unsigned int n) {
+//     asm(    "        mov r0,%0\n"
+//             "repeat: sub r0,#83\n"
+//             "        bgt repeat\n" 
+//             : : "r"(n) : "r0", "cc");
+// }
 
 void init_oled_gpio(void) {
     RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
@@ -17,9 +17,9 @@ void init_oled_gpio(void) {
 
 void write_cmd(uint8_t cmd) {
     // RS = 0 (PC0) for command
-    GPIOC->ODR &= ~(1<<0);
+    GPIOC->ODR &= ~0b1;
     // RW = 0 (PC1) for write
-    GPIOC->ODR &= ~(1<<1);
+    GPIOC->ODR &= ~0b10;
     
     // Put command on data bus (PC3-PC10)
     GPIOC->ODR = (GPIOC->ODR & ~(0xFF << 3)) | (cmd << 3);
