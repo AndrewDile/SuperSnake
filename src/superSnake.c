@@ -164,11 +164,11 @@ void TIM2_IRQHandler(void) {
 
     // Determine direction based on thresholds
     if (x_axis_value < THRESHOLD_LOW) {
-        direction = 'L'; // Move Left
+      // direction = 'L'; // Move Left
     } else if (x_axis_value > THRESHOLD_HIGH) {
-        direction = 'R'; // Move Right
+      // direction = 'R'; // Move Right
     } else {
-        direction = 'C'; // Center
+      // direction = 'C'; // Center
     }
 }
 
@@ -180,7 +180,6 @@ void init_tim2(void) {
   NVIC_EnableIRQ(TIM2_IRQn);         // Enable TIM2 interrupt in NVIC
   TIM2->CR1 |= TIM_CR1_CEN;          // Start timer
 }
-
 
 void updateJoystick() {
   int8_t ADCReading = ADC1->DR;

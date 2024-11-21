@@ -90,3 +90,24 @@ void spi_cmd(unsigned int data) {
   SPI2->DR = data;                 // RS=0
 }
 
+void setupOLED() {
+  init_spi1();
+  spi1_init_oled();
+
+  spi1_setup_dma();
+  spi1_enable_dma();
+}
+
+void updateOLED(int8_t message) {
+  switch (message) {
+    case WELCOME:
+      spi1_dma_display1("Welcome! Press");
+      spi1_dma_display2("In to Start");
+      break;
+    case SCORE:
+      break;
+    case HIGHS:
+      break;
+  }
+  
+}

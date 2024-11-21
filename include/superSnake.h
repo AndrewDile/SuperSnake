@@ -125,6 +125,11 @@ extern char direction;
 
 #define PWM_MAX 2400
 
+// constants for OLED messages
+#define WELCOME 0
+#define SCORE 1
+#define HIGHS 2
+
 // each segment of the snake needs a position and a direction value
 struct segment {
   int8_t x; // horizontal gametile position -- left = 0
@@ -175,3 +180,7 @@ void spi1_dma_display1(const char*);
 void spi1_dma_display2(const char*);
 void spi1_setup_dma();
 void spi1_enable_dma();
+void setupOLED();
+void updateOLED(int8_t);
+void setup_adc();
+void init_tim2();

@@ -28,19 +28,12 @@ int main() {
   // setupJoystick();
   //for oled
 
-  init_spi1();
-  spi1_init_oled();
-
-  spi1_setup_dma();
-  spi1_enable_dma();
+  setupOLED();
+  updateOLED(WELCOME);
 
   setup_tim1();
 
   playSound(1);
-
-  //test oled
-  spi1_dma_display1("where r u");
-  spi1_dma_display2("will");
 
   // FIL fil;
   // FRESULT fr;
@@ -53,16 +46,16 @@ int main() {
   //   LCD_Clear(purple);
   // }
 
- while (true) {
-    // Check direction and act accordingly
-    if (direction == 'L') {
-       joystickDirection = LEFT;
-    } else if (direction == 'R') {
-      joystickDirection = RIGHT;
-    } else {
-      joystickDirection = NEUTRAL;
-    }
-    }
+  // while (true) {
+  //   // Check direction and act accordingly
+  //   if (direction == 'L') {
+  //     joystickDirection = LEFT;
+  //   } else if (direction == 'R') {
+  //     joystickDirection = RIGHT;
+  //   } else {
+  //     joystickDirection = NEUTRAL;
+  //   }
+  // }
 
   // loop part of game
   while (true) {
