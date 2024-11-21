@@ -122,39 +122,65 @@ void updateLCDDisplay() {
 
 // function to initialize ADC for joystick readings
 
-void setupJoystick() {
-  // enable RCC clocks, port A, and pins
-  RCC->APB2ENR |= RCC_APB2ENR_ADCEN;
-  RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
-  GPIOA->MODER |= 0xF;
+volatile uint16_t x_axis_value = 0;
+volatile uint16_t boxcar[BCSIZE];
+volatile uint32_t bcsum = 0;
+volatile uint16_t bcn = 0;
+volatile uint16_t volume = 0;
 
-  RCC->CR2 |= RCC_CR2_HSI14ON; // enable highspeed 14MHz
-  while (!(RCC->CR2 & RCC_CR2_HSI14RDY)); // wait
+void setup_adc(void) {
+  RCC->AHBENR |= RCC_AHBENR_GPIOAEN; // Enable GPIOA clock
+  GPIOA->MODER |= GPIO_MODER_MODER1; // Set PA1 to analog mode
 
-  // set resolution to 6 bits
-  ADC1->CFGR1 &= ~ADC_CFGR1_RES;
-  ADC1->CFGR1 |= ADC_CFGR1_RES_1;
+  RCC->APB2ENR |= RCC_APB2ENR_ADCEN; // Enable ADC clock
+  RCC->CR2 |= RCC_CR2_HSI14ON;       // Enable HSI14 clock
+  while (!(RCC->CR2 & RCC_CR2_HSI14RDY)); // Wait for HSI14 to be ready
 
-  // configure ADC to only do a conversion after the last value has been read
-  ADC1->CFGR1 |= ADC_CFGR1_WAIT;
+  ADC1->CR |= ADC_CR_ADEN;           // Enable ADC
+  while (!(ADC1->ISR & ADC_ISR_ADRDY)); // Wait for ADC ready
+  while ((ADC1->CR & ADC_CR_ADSTART)); // Ensure no ongoing conversion
 
- // enable ADC peripheral and wait for it to be ready
-  ADC1->CR |= ADC_CR_ADEN;
-  while (!(ADC1->ISR & ADC_ISR_ADRDY));
-  while((ADC1->CR & ADC_CR_ADSTART));
-
-  // select channels 0 and 1 (PA0 for JoystickX, PA1 for JoystickY)
-  ADC1->CHSELR = ADC_CHSELR_CHSEL0 | ADC_CHSELR_CHSEL1;
-
-  // enable end of conversion interrupt
-  ADC1->IER |= ADC_IER_EOCIE;
-
-  // start conversion
-  ADC1->CR |= ADC_CR_ADSTART;
-
-  // enable ADC interrupt in NVIC
-  NVIC_EnableIRQ(ADC1_IRQn);
+  ADC1->CHSELR = ADC_CHSELR_CHSEL1;  // Select channel 1 (PA1)
+  while (ADC1->ISR & ADC_ISR_EOC);   // Clear any pending EOC
+  while (!(ADC1->ISR & ADC_ISR_ADRDY)); // Wait until ready
 }
+
+void TIM2_IRQHandler(void) {
+    TIM2->SR &= ~TIM_SR_UIF; // Clear interrupt flag
+
+    ADC1->CR |= ADC_CR_ADSTART; // Start ADC conversion
+    while (!(ADC1->ISR & ADC_ISR_EOC)); // Wait for conversion complete
+
+    uint16_t adc_value = ADC1->DR; // Read ADC value
+
+    // Update boxcar filter
+    bcsum -= boxcar[bcn];
+    bcsum += boxcar[bcn] = adc_value;
+    bcn = (bcn + 1) % BCSIZE;
+    volume = bcsum / BCSIZE;
+
+    // Update global X-axis value
+    x_axis_value = volume;
+
+    // Determine direction based on thresholds
+    if (x_axis_value < THRESHOLD_LOW) {
+        direction = 'L'; // Move Left
+    } else if (x_axis_value > THRESHOLD_HIGH) {
+        direction = 'R'; // Move Right
+    } else {
+        direction = 'C'; // Center
+    }
+}
+
+void init_tim2(void) {
+  RCC->APB1ENR |= RCC_APB1ENR_TIM2EN; // Enable TIM2 clock
+  TIM2->PSC = 48000 - 1;             // Prescaler for 1ms tick
+  TIM2->ARR = 100 - 1;               // Update period = 100ms
+  TIM2->DIER |= TIM_DIER_UIE;        // Enable update interrupt
+  NVIC_EnableIRQ(TIM2_IRQn);         // Enable TIM2 interrupt in NVIC
+  TIM2->CR1 |= TIM_CR1_CEN;          // Start timer
+}
+
 
 void updateJoystick() {
   int8_t ADCReading = ADC1->DR;

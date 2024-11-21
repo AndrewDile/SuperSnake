@@ -19,6 +19,8 @@ int main() {
   // set ups
   internal_clock();
   init_usart5();
+  setup_adc();
+  init_tim2();
   setupLCDDisplay();
   initializeSnake();
   // setupDMA();
@@ -50,6 +52,17 @@ int main() {
   // if (!fr) {
   //   LCD_Clear(purple);
   // }
+
+ while (true) {
+    // Check direction and act accordingly
+    if (direction == 'L') {
+       joystickDirection = LEFT;
+    } else if (direction == 'R') {
+      joystickDirection = RIGHT;
+    } else {
+      joystickDirection = NEUTRAL;
+    }
+    }
 
   // loop part of game
   while (true) {

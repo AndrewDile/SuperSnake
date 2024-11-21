@@ -104,6 +104,12 @@ extern uint16_t orange;
 #define WON 2
 #define ABILITY_USED 3
 
+// constants for adc
+#define THRESHOLD_LOW 1000  // ADC RANGE ADJUSTMENTS NEEDED
+#define THRESHOLD_HIGH 3000
+#define BCSIZE 16
+extern char direction;
+
 // constants for snake and movement
 #define INITIAL_SNAKE_SPEED 500  // milliseconds between speed
 #define INITIAL_SNAKE_LENGTH 3  // segments including head
