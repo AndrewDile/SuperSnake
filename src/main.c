@@ -21,8 +21,8 @@ int main() {
   init_usart5();
   setupLCDDisplay();
   initializeSnake();
-  setupDMA();
-  enableDMA();
+  // setupDMA();
+  // enableDMA();
   // setupJoystick();
   //for oled
 
