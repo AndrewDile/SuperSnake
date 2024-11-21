@@ -153,6 +153,7 @@ void generateSnack();
 void movementLogic();
 void gameStateHandler();
 void playSound(uint8_t);
+void setup_tim1();
 void ateSnack();
 
 // oled functions
@@ -166,3 +167,5 @@ void update_oled_display(void);
 void spi_cmd();
 void spi1_dma_display1(const char*);
 void spi1_dma_display2(const char*);
+void spi1_setup_dma();
+void spi1_enable_dma();

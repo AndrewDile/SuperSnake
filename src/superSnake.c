@@ -305,6 +305,10 @@ void movementLogic() {
   for (int i = 0; i <= snakeLength && snakeLength < NUM_X_CELLS * NUM_Y_CELLS; i++) {
     // snake head logic
     if (i == 0) {
+      // save last position before updating it
+      lastX = snake[i].x;
+      lastY = snake[i].y;
+      
       // update position, detect border collision, detect eating, detect winning, update gameboard
       switch (snake[0].direction) {
         case UP:
@@ -610,23 +614,45 @@ void gameStateHandler() {
   }
 }
 
-// plays song based on value, maybe updates a flag once it finishes a song?
+void setup_tim1(void) {
+    RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
+    RCC->AHBENR  |= RCC_AHBENR_GPIOAEN;
+
+    // Configure only PA11 for TIM1_CH4
+    GPIOA->MODER &= ~(3 << 22);  // Clear mode bits for PA11
+    GPIOA->MODER |= (2 << 22);   // Set PA11 to alternate function mode
+    GPIOA->AFR[1] &= ~(0xF << 12); // Clear AFR bits for PA11
+    GPIOA->AFR[1] |= (0x2 << 12);  // Set AF2 for PA11
+
+    TIM1->BDTR |= TIM_BDTR_MOE;
+    TIM1->PSC = 0;
+    TIM1->ARR = 2399;
+
+    // Configure PWM mode for TIM1_CH4
+    TIM1->CCMR2 &= ~(7 << 12);  // Clear OC4M
+    TIM1->CCMR2 |= (6 << 12);   // Set OC4M = 110 (PWM1)
+    TIM1->CCMR2 |= TIM_CCMR2_OC4PE;  // Enable output compare preload for CH4
+
+    TIM1->CCER |= TIM_CCER_CC4E;  // Enable output for TIM1_CH4
+    TIM1->CR1 |= TIM_CR1_CEN;
+}
+
 void playSound(uint8_t song) {
-  switch(song) {
-    case 0:
-      TIM3->ARR = 999;
-      break;
-    case 1:
-      TIM3->ARR = 799;
-      break;
-    case 2:
-      TIM3->ARR = 599;
-      break;
-    default:
-      TIM3->CCR1 = 0; //muted 
-      break;
-  }
-  TIM3->CCR1 = TIM3->ARR / 2; //maintains 50% cycle 
+    switch (song) {
+        case 0:
+            TIM1->ARR = 999; // ~1 kHz
+            break;
+        case 1:
+            TIM1->ARR = 799; // ~1.25 kHz
+            break;
+        case 2:
+            TIM1->ARR = 599; // ~1.67 kHz
+            break;
+        default:
+            TIM1->CCR4 = 0; // Muted
+            return;
+    }
+    TIM1->CCR4 = TIM1->ARR / 2; // Maintains 50% cycle
 }
 
 // chance for snack to update ability variable to new value
