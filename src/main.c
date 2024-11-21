@@ -53,7 +53,7 @@ int main() {
 
   // loop part of game
   while (true) {
-    // updateLCDDisplay();
+    updateLCDDisplay();
 
     updateJoystick();
   }
