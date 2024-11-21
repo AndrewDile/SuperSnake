@@ -10,11 +10,6 @@
 #include "superSnake.h"
 #include "helper.h"
 
-int8_t highscore1 = 101;
-int8_t highscore2 = 70;
-int8_t highscore3 = 30;
-int8_t highscore4 = 6;
-
 int main() {
   // set ups
   internal_clock();
@@ -23,28 +18,21 @@ int main() {
   init_tim2();
   setupLCDDisplay();
   initializeSnake();
+  setupMovementTimer();
   // setupDMA();
   // enableDMA();
-  // setupJoystick();
-  //for oled
+  setupJoystick();
+
+  mountSD();
+  writeHighScoresToSD();
+  readHighScoresFromSD();
 
   setupOLED();
-  updateOLED(WELCOME);
+  updateOLED(HIGHS);
 
   setup_tim1();
 
   playSound(1);
-
-  // FIL fil;
-  // FRESULT fr;
-  // fr = f_open(&fil, "highscores.txt", FA_WRITE | FA_CREATE_NEW);
-  // if (fr != FR_OK) return;
-  // UINT wlen;
-  // int8_t highscores[4] = {highscore1, highscore2, highscore3, highscore4};
-  // fr = f_write(&fil, (BYTE*)highscores, 4, wlen);
-  // if (!fr) {
-  //   LCD_Clear(purple);
-  // }
 
   // while (true) {
   //   // Check direction and act accordingly

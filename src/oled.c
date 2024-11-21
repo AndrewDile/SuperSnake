@@ -99,14 +99,22 @@ void setupOLED() {
 }
 
 void updateOLED(int8_t message) {
+  char line1[17];
+  char line2[17];
+
   switch (message) {
     case WELCOME:
       spi1_dma_display1("Welcome! Press");
-      spi1_dma_display2("In to Start");
+      spi1_dma_display2("in JoyS to Start");
       break;
     case SCORE:
+
       break;
     case HIGHS:
+      sprintf(line1, "Highs: 1. %d", highscore1);
+      sprintf(line2, "2. %d   3. %d", highscore2, highscore3);
+      spi1_dma_display1(line1);
+      spi1_dma_display2(line2);
       break;
   }
   

@@ -44,6 +44,12 @@ uint16_t purple = 30735;
 uint16_t orange = 64512;
 uint16_t uhh = 64300;
 
+// variables for high scores
+int8_t highscore1 = 70;
+int8_t highscore2 = 20;
+int8_t highscore3 = 8;
+FATFS fs_storage;
+
 // set up LCD display to be communicated with
 void setupLCDDisplay() {
   LCD_Setup();
@@ -684,4 +690,102 @@ void playSound(uint8_t song) {
 // also calls for LED color change or turns off if needed
 void ateSnack() {
 
+}
+
+void writeHighScoresToSD() {
+  FIL fil;
+  FRESULT fr;
+  fr = f_open(&fil, "highscores.txt", FA_WRITE | FA_CREATE_NEW);
+  if (fr != FR_OK) {
+    f_close(&fil);
+    return;
+  }
+  UINT wlen;
+  int8_t buff[3] = {highscore1, highscore2, highscore3};
+  fr = f_write(&fil, (BYTE*)buff, 3, wlen);
+  if (fr != FR_OK) {
+    f_close(&fil);
+    return;
+  }
+  f_close(&fil);
+}
+
+void readHighScoresFromSD() {
+  FIL fil;
+  FRESULT fr;
+  fr = f_open(&fil, "highscores.txt", FA_READ);
+  if (fr != FR_OK) {
+    f_close(&fil);
+    return;
+  }
+  UINT br;
+  int8_t buff[3];
+  fr = f_read(&fil, buff, 3, br);
+  if (fr != FR_OK) {
+    f_close(&fil);
+    return;
+  }
+  f_close(&fil);
+  highscore1 = buff[0];
+  highscore2 = buff[1];
+  highscore3 = buff[2];
+}
+
+void mountSD() {
+  FATFS *fs = &fs_storage;
+  if (fs->id != 0) return;
+  int res = f_mount(fs, "", 1);
+  if (res != FR_OK) return;
+}
+
+// function to initialize ADC for joystick readings
+void setupJoystick() {
+  // enable RCC clocks, port A, and pins
+  RCC->APB2ENR |= RCC_APB2ENR_ADCEN;
+  RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+  GPIOA->MODER |= 0xF;
+
+  // set resolution to 6 bits
+  ADC1->CFGR1 &= ~ADC_CFGR1_RES;
+  ADC1->CFGR1 |= ADC_CFGR1_RES_1;
+
+  // configure ADC to only do a conversion after the last value has been read
+  ADC1->CFGR1 |= ADC_CFGR1_WAIT;
+
+  // select channels 0 and 1 (PA0 for JoystickX, PA1 for JoystickY)
+  ADC1->CHSELR = 0x1;
+
+  // enable end of conversion interrupt
+  ADC1->IER |= ADC_IER_EOCIE;
+  
+  // enable ADC interrupt in NVIC
+  NVIC_EnableIRQ(ADC1_IRQn);
+
+  // enable ADC peripheral and wait for it to be ready
+  ADC1->CR |= ADC_CR_ADEN;
+  while (!(ADC1->ISR & ADC_ISR_ADRDY));
+
+  // start conversion
+  ADC1->CR |= ADC_CR_ADSTART;
+}
+
+// IRQ Handler when ADC conversion finishes
+void ADC1_IRQHandler() {
+  // initialize temp variables
+  int8_t x;
+
+  // read values sequentially
+  if (ADC1->ISR & ADC_ISR_EOC) {
+    x = ADC1->DR;
+
+    // set joystickDirection based on readings
+    // if (x < 10) joystickDirection = LEFT;
+    // else if (x > 50) joystickDirection = RIGHT;
+    // else joystickDirection = NEUTRAL;
+
+    // snake[0].direction = joystickDirection;
+
+    // start new ADC conversion
+    ADC1->CR |= ADC_CR_ADSTART;
+  }
 }

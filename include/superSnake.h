@@ -129,6 +129,7 @@ extern char direction;
 #define WELCOME 0
 #define SCORE 1
 #define HIGHS 2
+extern FATFS fs_storage;
 
 // each segment of the snake needs a position and a direction value
 struct segment {
@@ -148,8 +149,11 @@ extern segment snake[NUM_X_CELLS * NUM_Y_CELLS];
 extern int8_t snakeLength; // current score can be derived from this
 extern uint32_t snakeSpeed;
 extern int8_t joystickDirection;
-int8_t joystickXraw;
-int8_t joystickYraw;
+extern int8_t joystickXraw;
+extern int8_t joystickYraw;
+extern int8_t highscore1;
+extern int8_t highscore2;
+extern int8_t highscore3;
 
 // function declarations
 void setupLCDDisplay();
@@ -184,3 +188,8 @@ void setupOLED();
 void updateOLED(int8_t);
 void setup_adc();
 void init_tim2();
+
+// sd card functions
+void writeHighScoresToSD();
+void readHighScoresFromSD();
+void mountSD();
