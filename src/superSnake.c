@@ -238,6 +238,7 @@ void initializeSnake() {
   gameboard[snake[2].x][snake[2].y] = TAIL_UP;
   
   // Generate first snack
+  srand(joystickXraw);
   generateSnack();
 }
 
