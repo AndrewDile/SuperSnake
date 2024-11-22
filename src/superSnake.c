@@ -144,7 +144,6 @@ void setup_adc(void) {
   ADC1->CHSELR = ADC_CHSELR_CHSEL1;  // Select channel 1 (PA1)
   // while (ADC1->ISR & ADC_ISR_EOC);   // Clear any pending EOC
   while (!(ADC1->ISR & ADC_ISR_ADRDY)); // Wait until ready
-
 }
 
 void TIM2_IRQHandler(void) {

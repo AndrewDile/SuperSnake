@@ -105,7 +105,7 @@ void updateOLED() {
   switch (gameState) {
     case IDLE:
       spi1_dma_display1("Welcome! Press");
-      spi1_dma_display2("in JoyS to Start");
+      spi1_dma_display2("button to Start");
       break;
     case GAMEWON:
     case GAMELOST:
