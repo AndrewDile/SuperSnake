@@ -645,29 +645,102 @@ void setup_tim1(void) {
     TIM1->CR1 |= TIM_CR1_CEN;
 }
 
-void playSound(uint8_t song) {
-    switch (song) {
-        case 0:
-            TIM1->ARR = 999; // ~1 kHz
+// void playSound(uint8_t song) {
+//     switch (song) {
+//         case 0:
+//             TIM1->ARR = 999; // ~1 kHz
+ 
+//             break;
+//         case 1:
+//             TIM1->ARR = 799; // ~1.25 kHz
+//             break;
+//         case 2:
+//             TIM1->ARR = 599; // ~1.67 kHz
+//             break;
+//         default:
+//             TIM1->CCR4 = 0; // Muted
+//             return;
+//     }
+//     TIM1->CCR4 = TIM1->ARR / 2; // Maintains 50% cycle
+// }
+
+
+
+void setup_tim7(void) {
+    RCC->APB1ENR |= RCC_APB1ENR_TIM7EN;
+    TIM7->PSC = 48000 - 1;    // 1ms ticks
+    TIM7->ARR = SOUND_DURATION - 1;
+    TIM7->DIER |= TIM_DIER_UIE;
+    NVIC_EnableIRQ(TIM7_IRQn);
+    NVIC_SetPriority(TIM7_IRQn, 1);
+}
+
+void TIM7_IRQHandler(void) {
+    if (TIM7->SR & TIM_SR_UIF) {
+        TIM7->SR &= ~TIM_SR_UIF;
+        TIM1->CCR4 = 0; // Stop sound
+        TIM7->CR1 &= ~TIM_CR1_CEN; // Stop timer
+    }
+}
+
+void play_sound_effect(uint8_t effect) {
+    uint16_t frequency;
+    switch (effect) {
+        case EAT:
+            frequency = EAT_FREQ;
+            // TIM1->ARR = 999;
             break;
-        case 1:
-            TIM1->ARR = 799; // ~1.25 kHz
+        case WON:
+            frequency = WIN_FREQ;
+            // TIM1->ARR = 799;
             break;
-        case 2:
-            TIM1->ARR = 599; // ~1.67 kHz
+        case LOST:
+            frequency = LOSE_FREQ;
+            // TIM1->ARR = 599;
             break;
         default:
-            TIM1->CCR4 = 0; // Muted
             return;
     }
-    TIM1->CCR4 = TIM1->ARR / 2; // Maintains 50% cycle
+    
+    TIM1->ARR = 48000000 / frequency - 1;
+    TIM1->CCR4 = TIM1->ARR / 2;
+    
+    TIM7->CR1 &= ~TIM_CR1_CEN;
+    TIM7->CNT = 0;
+    TIM7->CR1 |= TIM_CR1_CEN;
 }
 
-// chance for snack to update ability variable to new value
-// also calls for LED color change or turns off if needed
-void ateSnack() {
+
+void playSound(uint8_t song) {
+    play_sound_effect(song);
+}
+
+void delay_ms(uint32_t ms) {
+    for(uint32_t i = 0; i < ms; i++)
+        for(volatile uint32_t j = 0; j < 48000/4; j++);
+}
+
+
+void test_sounds() {
+    printf("Testing eat sound...\n");
+    playSound(EAT);
+    delay_ms(500);
+    
+    printf("Testing win sound...\n");  
+    playSound(WON);
+    delay_ms(500);
+    
+    printf("Testing lose sound...\n");
+    playSound(LOST);
+    
+}
+
+
+
+void ateSnack(){
 
 }
+
 
 void writeHighScoresToSD() {
   disable_sdcard();

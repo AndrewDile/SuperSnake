@@ -22,13 +22,18 @@ int main() {
   initializeSnake();
   setupMovementTimer();
 
+  setup_tim1(); 
+  setup_tim7();
+  test_sounds();
+ 
+
+  // playSound(WON);
   // readHighScoresFromSD();
 
   setupOLED();
 
-  setup_tim1();
 
-  playSound(1);
+  
 
   // loop part of game
   while (true) {
@@ -39,3 +44,5 @@ int main() {
     gameStateHandler();
   }
 }
+
+

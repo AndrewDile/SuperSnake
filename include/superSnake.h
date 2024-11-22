@@ -203,3 +203,21 @@ void init_tim2();
 void writeHighScoresToSD();
 void readHighScoresFromSD();
 void mountSD();
+
+
+
+void setup_tim7(void);
+void TIM7_IRQHandler(void);
+void play_sound_effect(uint8_t effect);
+void playSound(uint8_t song);
+
+
+#define SOUND_DURATION 200 // ms
+#define EAT_FREQ 999    // Hz
+#define WIN_FREQ 799    
+#define LOSE_FREQ 1199
+
+void test_sounds();
+
+void setup_tim7(void);
+void play_sound_effect(uint8_t effect);
