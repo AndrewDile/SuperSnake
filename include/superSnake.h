@@ -131,6 +131,7 @@ extern char direction;
 #define HIGHS 2
 #define TEST 3
 extern FATFS fs_storage;
+extern int8_t button;
 
 // each segment of the snake needs a position and a direction value
 struct segment {
@@ -139,8 +140,14 @@ struct segment {
   uint8_t direction; // direction current segment (or head) is facing
 };
 
+struct tile {
+  int8_t x;
+  int8_t y;
+};
+
 // defines the structure as a data type, for easier later use
 typedef struct segment segment;
+typedef struct tile tile;
 
 // exteral variables declared so other files to access
 extern int8_t gameState;  // game over can be derived from this
@@ -150,7 +157,7 @@ extern segment snake[NUM_X_CELLS * NUM_Y_CELLS];
 extern int8_t snakeLength; // current score can be derived from this
 extern uint32_t snakeSpeed;
 extern int8_t joystickDirection;
-extern uint8_t joystickXraw;
+extern uint32_t joystickXraw;
 extern int8_t joystickYraw;
 extern int8_t highscore1;
 extern int8_t highscore2;
@@ -171,6 +178,7 @@ void gameStateHandler();
 void playSound(uint8_t);
 void setup_tim1();
 void ateSnack();
+void goFaster();
 
 // oled functions
 

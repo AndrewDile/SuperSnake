@@ -121,5 +121,4 @@ void updateOLED() {
       spi1_dma_display2(line2);
       break;
   }
-  
 }

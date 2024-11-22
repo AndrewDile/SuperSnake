@@ -22,12 +22,12 @@ int8_t gameboard[NUM_X_CELLS][NUM_Y_CELLS] = {0}; // value determines what is di
 segment snake[NUM_X_CELLS * NUM_Y_CELLS]; // not dynamically stored to avoid fragmentation and leaks, and to ensure program doesn't run out of space during gameplay
 
 // snake movement variables
-int8_t snakeLength = 2;
-uint32_t snakeSpeed = 1000;
+int8_t snakeLength = 3;
+uint32_t snakeSpeed = INITIAL_SNAKE_SPEED;
 
 // variable for joystick direction
 int8_t joystickDirection = NEUTRAL;
-uint8_t joystickXraw = -1;
+uint32_t joystickXraw = -1;
 int8_t joystickYraw = -1;
 
 // variable for ability
@@ -45,12 +45,15 @@ uint16_t orange = 64512;
 uint16_t uhh = 64300;
 
 // variables for high scores
-int8_t highscore1 = 70;
-int8_t highscore2 = 20;
-int8_t highscore3 = 8;
+int8_t highscore1 = 0;
+int8_t highscore2 = 0;
+int8_t highscore3 = 69;
 FATFS fs_storage;
 
 int8_t newJoystickReading = 0;
+int8_t button = 0;
+
+int8_t lastHeadDirection = UP;
 
 // set up LCD display to be communicated with
 void setupLCDDisplay() {
@@ -167,16 +170,55 @@ void init_tim2(void) {
 
 void updateJoystick() {
   if (newJoystickReading == 1) {
-    if (joystickXraw > 200) {
-      joystickDirection = NEUTRAL;
-    } else if (joystickXraw > 100) {
+    if (joystickXraw > 3000) {
       joystickDirection = RIGHT;
+    } else if (joystickXraw > 1000) {
+      joystickDirection = NEUTRAL;
     } else {
       joystickDirection = LEFT;
     }
 
+    if (gameState == RUNNING) {
+      switch (lastHeadDirection) {
+        case RIGHT:
+          if (joystickDirection == RIGHT) {
+            snake[0].direction = DOWN;
+          }
+          if (joystickDirection == LEFT) {
+            snake[0].direction = UP;
+          }
+          break;
+        case LEFT:
+          if (joystickDirection == RIGHT) {
+            snake[0].direction = UP;
+          }
+          if (joystickDirection == LEFT) {
+            snake[0].direction = DOWN;
+          }
+          break;
+        case UP:
+          if (joystickDirection == RIGHT) {
+            snake[0].direction = RIGHT;
+          }
+          if (joystickDirection == LEFT) {
+            snake[0].direction = LEFT;
+          }
+          break;
+        case DOWN:
+          if (joystickDirection == RIGHT) {
+            snake[0].direction = LEFT;
+          }
+          if (joystickDirection == LEFT) {
+            snake[0].direction = RIGHT;
+          }
+          break;
+      } 
+    }
+
     newJoystickReading = 0;
   }
+
+  button = GPIOA->IDR & (1 << 3);
 }
 
 void initializeSnake() {
@@ -207,7 +249,7 @@ void setupMovementTimer() {
   TIM3->PSC = 47999;  // 48MHz/48000 = 1kHz
   
   // Set initial period to snakeSpeed (in ms)
-  TIM3->ARR = INITIAL_SNAKE_SPEED;
+  TIM3->ARR = snakeSpeed;
   
   // Enable update interrupt
   TIM3->DIER |= TIM_DIER_UIE;
@@ -220,6 +262,22 @@ void setupMovementTimer() {
 }
 
 void generateSnack() {
+  // tile clears[NUM_X_CELLS] = {0};
+  // int8_t clearNum = 0;
+
+  // for (int x = 0; x < NUM_X_CELLS; x++) {
+  //   for (int y = 0; y < NUM_Y_CELLS; y++) {
+  //     if (gameboard[x][y] == EMPTY) {
+  //       clears[clearNum].x = x;
+  //       clears[clearNum].y = y;
+  //       clearNum++;
+  //     }
+  //   }
+  // }
+
+  // uint8_t randomIndex = rand() % clearNum;
+  // gameboard[clears[randomIndex].x][clears[randomIndex].y] = SNACK;
+
   // Generate new snack at random position
   // Create arrays to store empty positions
   uint8_t emptyX[NUM_X_CELLS * NUM_Y_CELLS];
@@ -267,6 +325,9 @@ void movementLogic() {
   for (int i = 0; i <= snakeLength && snakeLength < NUM_X_CELLS * NUM_Y_CELLS; i++) {
     // snake head logic
     if (i == 0) {
+      // save last head direction
+      lastHeadDirection = snake[i].direction;
+
       // save last position before updating it
       lastX = snake[i].x;
       lastY = snake[i].y;
@@ -287,6 +348,7 @@ void movementLogic() {
               playSound(WON);
               return;
             }
+            goFaster();
             ateSnack();  // possibly obtain an ability
             playSound(EAT);
             generateSnack();  // generate new snack
@@ -307,6 +369,7 @@ void movementLogic() {
               playSound(WON);
               return;
             }
+            goFaster();
             ateSnack();  // possibly obtain an ability
             playSound(EAT);
             generateSnack();  // generate new snack
@@ -327,6 +390,7 @@ void movementLogic() {
               playSound(WON);
               return;
             }
+            goFaster();
             ateSnack();  // possibly obtain an ability
             playSound(EAT);
             generateSnack();  // generate new snack
@@ -347,6 +411,7 @@ void movementLogic() {
               playSound(WON);
               return;
             }
+            goFaster();
             ateSnack();  // possibly obtain an ability
             playSound(EAT);
             generateSnack();  // generate new snack
@@ -364,42 +429,32 @@ void movementLogic() {
         snake[i].y = lastY;
         snake[i].direction = lastDirection;
       }
-
+      
       // save last position before updating it
+      int8_t tempX = lastX;
+      int8_t tempY = lastY;
       lastX = snake[i].x;
       lastY = snake[i].y;
 
       // update position
-      switch (snake[i].direction) {
-        case UP:
-          snake[i].y--;
-          break;
-        case DOWN:
-          snake[i].y++;
-          break;
-        case LEFT:
-          snake[i].x--;
-          break;
-        case RIGHT:
-          snake[i].x++;
-          break;
-        default:
-          break;
-      }
+      snake[i].x = tempX;
+      snake[i].y = tempY;
 
       // save last direction before updating it
       lastDirection = snake[i].direction;
 
       // update direction
-      if (snake[i].x - snake[i - 1].x > 0) {
-        snake[i].direction = LEFT;
-      } else {
+      int diffx = snake[1].x - snake[i - 1].x;
+      int diffy = snake[1].y - snake[i - 1].y;
+
+      if (diffx < 0) {
         snake[i].direction = RIGHT;
-      }
-      if (snake[i].y - snake[i - 1].y > 0) {
-        snake[i].direction = UP;
-      } else {
+      } else if (diffx > 0) {
+        snake[i].direction = LEFT;
+      } else if (diffy < 0) {
         snake[i].direction = DOWN;
+      } else if (diffy > 0) {
+        snake[i].direction = UP;
       }
 
       // update gameboard
@@ -472,40 +527,30 @@ void movementLogic() {
     // snake tail logic
     else if (i == snakeLength - 1) {
       // save last position before updating it
+      int8_t tempX = lastX;
+      int8_t tempY = lastY;
       lastX = snake[i].x;
       lastY = snake[i].y;
 
       // update position
-      switch (snake[i].direction) {
-        case UP:
-          snake[i].y--;
-          break;
-        case DOWN:
-          snake[i].y++;
-          break;
-        case LEFT:
-          snake[i].x--;
-          break;
-        case RIGHT:
-          snake[i].x++;
-          break;
-        default:
-          break;
-      }
+      snake[i].x = tempX;
+      snake[i].y = tempY;
 
       // save last direction before updating it
       lastDirection = snake[i].direction;
 
       // update direction
-      if (snake[i].x - snake[i - 1].x > 0) {
-        snake[i].direction = LEFT;
-      } else {
+      int diffx = snake[1].x - snake[i - 1].x;
+      int diffy = snake[1].y - snake[i - 1].y;
+
+      if (diffx < 0) {
         snake[i].direction = RIGHT;
-      }
-      if (snake[i].y - snake[i - 1].y > 0) {
-        snake[i].direction = UP;
-      } else {
+      } else if (diffx > 0) {
+        snake[i].direction = LEFT;
+      } else if (diffy < 0) {
         snake[i].direction = DOWN;
+      } else if (diffy > 0) {
+        snake[i].direction = UP;
       }
 
       // update gameboard
@@ -534,7 +579,7 @@ void movementLogic() {
   }
 
   // now that full snake is updated, check for collision with self
-  for (int i = 0; i < snakeLength; i++) {
+  for (int i = 1; i < snakeLength; i++) {
     if (snake[0].x == snake[i].x && snake[0].y == snake[i].y) {
       gameState = GAMELOST;
       playSound(LOST);
@@ -554,6 +599,7 @@ void TIM3_IRQHandler() {
 }
 
 void gameStateHandler() {
+  if (button) gameState = RUNNING;
   if (lastGameState != gameState) {
     switch (gameState) {
       case IDLE:
@@ -626,14 +672,14 @@ void ateSnack() {
 void writeHighScoresToSD() {
   FIL fil;
   FRESULT fr;
-  fr = f_open(&fil, "highscores.txt", FA_WRITE | FA_CREATE_NEW);
+  fr = f_open(&fil, "0:highscores.txt", FA_WRITE | FA_CREATE_NEW);
   if (fr != FR_OK) {
     f_close(&fil);
     return;
   }
   UINT wlen;
   int8_t buff[3] = {highscore1, highscore2, highscore3};
-  fr = f_write(&fil, (BYTE*)buff, 3, wlen);
+  fr = f_write(&fil, (BYTE*)buff, 3, &wlen);
   if (fr != FR_OK) {
     f_close(&fil);
     return;
@@ -644,14 +690,14 @@ void writeHighScoresToSD() {
 void readHighScoresFromSD() {
   FIL fil;
   FRESULT fr;
-  fr = f_open(&fil, "highscores.txt", FA_READ);
+  fr = f_open(&fil, "0:highscores.txt", FA_READ);
   if (fr != FR_OK) {
     f_close(&fil);
     return;
   }
   UINT br;
   int8_t buff[3];
-  fr = f_read(&fil, buff, 3, br);
+  fr = f_read(&fil, buff, 3, &br);
   if (fr != FR_OK) {
     f_close(&fil);
     return;
@@ -667,4 +713,11 @@ void mountSD() {
   if (fs->id != 0) return;
   int res = f_mount(fs, "", 1);
   if (res != FR_OK) return;
+}
+
+void goFaster() {
+  TIM3->CR1 &= ~TIM_CR1_CEN;
+  snakeSpeed -= SPEED_INCREASE;
+  TIM3->ARR = snakeSpeed;
+  TIM3->CR1 |= TIM_CR1_CEN;
 }
