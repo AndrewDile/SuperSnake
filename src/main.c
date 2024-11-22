@@ -25,29 +25,17 @@ int main() {
   readHighScoresFromSD();
 
   setupOLED();
-  
 
   setup_tim1();
 
   playSound(1);
 
-  // while (true) {
-  //   // Check direction and act accordingly
-  //   if (direction == 'L') {
-  //     joystickDirection = LEFT;
-  //   } else if (direction == 'R') {
-  //     joystickDirection = RIGHT;
-  //   } else {
-  //     joystickDirection = NEUTRAL;
-  //   }
-  // }
-
   // loop part of game
   while (true) {
-    // updateLCDDisplay();
+    updateLCDDisplay();
 
     updateJoystick();
 
-    updateOLED(TEST);
+    updateOLED();
   }
 }

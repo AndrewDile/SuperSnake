@@ -186,7 +186,7 @@ void spi1_dma_display2(const char*);
 void spi1_setup_dma();
 void spi1_enable_dma();
 void setupOLED();
-void updateOLED(int8_t);
+void updateOLED();
 void setup_adc();
 void init_tim2();
 
