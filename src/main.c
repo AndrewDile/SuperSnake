@@ -19,16 +19,13 @@ int main() {
   setupLCDDisplay();
   initializeSnake();
   setupMovementTimer();
-  // setupDMA();
-  // enableDMA();
-  setupJoystick();
 
   mountSD();
   writeHighScoresToSD();
   readHighScoresFromSD();
 
   setupOLED();
-  updateOLED(HIGHS);
+  
 
   setup_tim1();
 
@@ -47,8 +44,10 @@ int main() {
 
   // loop part of game
   while (true) {
-    updateLCDDisplay();
+    // updateLCDDisplay();
 
     updateJoystick();
+
+    updateOLED(TEST);
   }
 }

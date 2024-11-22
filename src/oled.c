@@ -116,6 +116,12 @@ void updateOLED(int8_t message) {
       spi1_dma_display1(line1);
       spi1_dma_display2(line2);
       break;
+    case TEST:
+      sprintf(line1, "ADC Value:");
+      sprintf(line2, "%d", joystickXraw);
+      spi1_dma_display1(line1);
+      spi1_dma_display2(line2);
+      break;
   }
   
 }

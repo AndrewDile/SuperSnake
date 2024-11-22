@@ -27,7 +27,7 @@ uint32_t snakeSpeed = 1000;
 
 // variable for joystick direction
 int8_t joystickDirection = NEUTRAL;
-int8_t joystickXraw = -1;
+uint8_t joystickXraw = -1;
 int8_t joystickYraw = -1;
 
 // variable for ability
@@ -49,6 +49,8 @@ int8_t highscore1 = 70;
 int8_t highscore2 = 20;
 int8_t highscore3 = 8;
 FATFS fs_storage;
+
+int8_t newJoystickReading = 0;
 
 // set up LCD display to be communicated with
 void setupLCDDisplay() {
@@ -129,53 +131,29 @@ void updateLCDDisplay() {
 // function to initialize ADC for joystick readings
 
 volatile uint16_t x_axis_value = 0;
-volatile uint16_t boxcar[BCSIZE];
-volatile uint32_t bcsum = 0;
-volatile uint16_t bcn = 0;
-volatile uint16_t volume = 0;
 
 void setup_adc(void) {
   RCC->AHBENR |= RCC_AHBENR_GPIOAEN; // Enable GPIOA clock
   GPIOA->MODER |= GPIO_MODER_MODER1; // Set PA1 to analog mode
-
   RCC->APB2ENR |= RCC_APB2ENR_ADCEN; // Enable ADC clock
   RCC->CR2 |= RCC_CR2_HSI14ON;       // Enable HSI14 clock
   while (!(RCC->CR2 & RCC_CR2_HSI14RDY)); // Wait for HSI14 to be ready
-
   ADC1->CR |= ADC_CR_ADEN;           // Enable ADC
   while (!(ADC1->ISR & ADC_ISR_ADRDY)); // Wait for ADC ready
-  while ((ADC1->CR & ADC_CR_ADSTART)); // Ensure no ongoing conversion
-
+  //while ((ADC1->CR & ADC_CR_ADSTART)); // Ensure no ongoing conversion
   ADC1->CHSELR = ADC_CHSELR_CHSEL1;  // Select channel 1 (PA1)
-  while (ADC1->ISR & ADC_ISR_EOC);   // Clear any pending EOC
+  // while (ADC1->ISR & ADC_ISR_EOC);   // Clear any pending EOC
   while (!(ADC1->ISR & ADC_ISR_ADRDY)); // Wait until ready
+
 }
 
 void TIM2_IRQHandler(void) {
-    TIM2->SR &= ~TIM_SR_UIF; // Clear interrupt flag
-
-    ADC1->CR |= ADC_CR_ADSTART; // Start ADC conversion
-    while (!(ADC1->ISR & ADC_ISR_EOC)); // Wait for conversion complete
-
-    uint16_t adc_value = ADC1->DR; // Read ADC value
-
-    // Update boxcar filter
-    bcsum -= boxcar[bcn];
-    bcsum += boxcar[bcn] = adc_value;
-    bcn = (bcn + 1) % BCSIZE;
-    volume = bcsum / BCSIZE;
-
-    // Update global X-axis value
-    x_axis_value = volume;
-
-    // Determine direction based on thresholds
-    if (x_axis_value < THRESHOLD_LOW) {
-      // direction = 'L'; // Move Left
-    } else if (x_axis_value > THRESHOLD_HIGH) {
-      // direction = 'R'; // Move Right
-    } else {
-      // direction = 'C'; // Center
-    }
+  TIM2->SR &= ~TIM_SR_UIF; // Clear interrupt flag
+  ADC1->CR |= ADC_CR_ADSTART; // Start ADC conversion
+  while (!(ADC1->ISR & ADC_ISR_EOC)); // Wait for conversion complete
+  uint32_t ADCReading = ADC1->DR;
+  joystickXraw = ADCReading; // Read ADC value
+  newJoystickReading = 1;
 }
 
 void init_tim2(void) {
@@ -184,68 +162,22 @@ void init_tim2(void) {
   TIM2->ARR = 100 - 1;               // Update period = 100ms
   TIM2->DIER |= TIM_DIER_UIE;        // Enable update interrupt
   NVIC_EnableIRQ(TIM2_IRQn);         // Enable TIM2 interrupt in NVIC
+  NVIC_SetPriority(TIM2_IRQn, 38);
   TIM2->CR1 |= TIM_CR1_CEN;          // Start timer
 }
 
 void updateJoystick() {
-  int8_t ADCReading = ADC1->DR;
-  // read values sequentially
-  if(joystickXraw == -1) {
-    joystickXraw = ADCReading;
-
-  } else {
-    joystickYraw = ADCReading;
-
-    // set joystickDirection based on readings
-    if (joystickXraw < 10) joystickDirection = LEFT;
-    else if (joystickXraw > 50) joystickDirection = RIGHT;
-    else if (joystickYraw < 10) joystickDirection = DOWN;
-    else if (joystickYraw > 50) joystickDirection = UP;
-    else joystickDirection = NEUTRAL;
-
-    // prevent 180 degree turns during game
-    if (gameState == RUNNING) {
-      switch (joystickDirection) {
-        case NEUTRAL:
-          break;
-        case UP:
-          if (snake[0].direction == DOWN) break;
-          snake[0].direction = joystickDirection;
-          break;
-        case RIGHT:
-          if (snake[0].direction == LEFT) break;
-          snake[0].direction = joystickDirection;
-          break;
-        case DOWN:
-          if (snake[0].direction == UP) break;
-          snake[0].direction = joystickDirection;
-          break;
-        case LEFT:
-          if (snake[0].direction == RIGHT) break;
-          snake[0].direction = joystickDirection;
-          break;
-        default:
-        break;
-      }
+  if (newJoystickReading == 1) {
+    if (joystickXraw > 200) {
+      joystickDirection = NEUTRAL;
+    } else if (joystickXraw > 100) {
+      joystickDirection = RIGHT;
+    } else {
+      joystickDirection = LEFT;
     }
 
-    joystickXraw = -1;
-    joystickYraw = -1;
+    newJoystickReading = 0;
   }
-}
-
-void setupDMA(){
-  RCC->AHBENR |= RCC_AHBENR_DMA1EN;
-  ADC1->CFGR1 |= ADC_CFGR1_DMAEN | ADC_CFGR1_DMACFG;
-  DMA1_Channel1->CPAR = (uint32_t) (&(ADC1->DR));
-  DMA1_Channel1->CMAR = (uint32_t)(joystickDirection);
-  DMA1_Channel1->CNDTR = 2;
-  DMA1_Channel1->CCR |= DMA_CCR_MINC | DMA_CCR_MSIZE_0 | DMA_CCR_PSIZE_0 | DMA_CCR_TEIE | DMA_CCR_CIRC;
-  DMA1_Channel1->CCR |= DMA_CCR_EN;
-}
-
-void enableDMA(void){
-  DMA1_Channel1->CCR |= DMA_CCR_EN;
 }
 
 void initializeSnake() {
@@ -736,56 +668,4 @@ void mountSD() {
   if (fs->id != 0) return;
   int res = f_mount(fs, "", 1);
   if (res != FR_OK) return;
-}
-
-// function to initialize ADC for joystick readings
-void setupJoystick() {
-  // enable RCC clocks, port A, and pins
-  RCC->APB2ENR |= RCC_APB2ENR_ADCEN;
-  RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
-  GPIOA->MODER |= 0xF;
-
-  // set resolution to 6 bits
-  ADC1->CFGR1 &= ~ADC_CFGR1_RES;
-  ADC1->CFGR1 |= ADC_CFGR1_RES_1;
-
-  // configure ADC to only do a conversion after the last value has been read
-  ADC1->CFGR1 |= ADC_CFGR1_WAIT;
-
-  // select channels 0 and 1 (PA0 for JoystickX, PA1 for JoystickY)
-  ADC1->CHSELR = 0x1;
-
-  // enable end of conversion interrupt
-  ADC1->IER |= ADC_IER_EOCIE;
-  
-  // enable ADC interrupt in NVIC
-  NVIC_EnableIRQ(ADC1_IRQn);
-
-  // enable ADC peripheral and wait for it to be ready
-  ADC1->CR |= ADC_CR_ADEN;
-  while (!(ADC1->ISR & ADC_ISR_ADRDY));
-
-  // start conversion
-  ADC1->CR |= ADC_CR_ADSTART;
-}
-
-// IRQ Handler when ADC conversion finishes
-void ADC1_IRQHandler() {
-  // initialize temp variables
-  int8_t x;
-
-  // read values sequentially
-  if (ADC1->ISR & ADC_ISR_EOC) {
-    x = ADC1->DR;
-
-    // set joystickDirection based on readings
-    // if (x < 10) joystickDirection = LEFT;
-    // else if (x > 50) joystickDirection = RIGHT;
-    // else joystickDirection = NEUTRAL;
-
-    // snake[0].direction = joystickDirection;
-
-    // start new ADC conversion
-    ADC1->CR |= ADC_CR_ADSTART;
-  }
 }

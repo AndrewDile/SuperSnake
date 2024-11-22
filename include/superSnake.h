@@ -129,6 +129,7 @@ extern char direction;
 #define WELCOME 0
 #define SCORE 1
 #define HIGHS 2
+#define TEST 3
 extern FATFS fs_storage;
 
 // each segment of the snake needs a position and a direction value
@@ -149,7 +150,7 @@ extern segment snake[NUM_X_CELLS * NUM_Y_CELLS];
 extern int8_t snakeLength; // current score can be derived from this
 extern uint32_t snakeSpeed;
 extern int8_t joystickDirection;
-extern int8_t joystickXraw;
+extern uint8_t joystickXraw;
 extern int8_t joystickYraw;
 extern int8_t highscore1;
 extern int8_t highscore2;
