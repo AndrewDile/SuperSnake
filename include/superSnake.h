@@ -13,6 +13,7 @@
 #include "fifo.h"
 #include "tty.h"
 #include "commands.h"
+#include "helper.h"
 
 // display is 240x320 pixels
 

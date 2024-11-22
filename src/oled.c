@@ -110,7 +110,7 @@ void updateOLED() {
     case GAMEWON:
     case GAMELOST:
       sprintf(line1, "Highs: 1. %d", highscore1);
-      sprintf(line2, "2. %d   3. %d", highscore2, highscore3);
+      sprintf(line2, "2. %d 3. %d", highscore2, highscore3);
       spi1_dma_display1(line1);
       spi1_dma_display2(line2);
       break;

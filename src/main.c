@@ -13,9 +13,7 @@
 int main() {
   // set ups
   setupLCDDisplay();
-  // enable_sdcard();
-  // mountSD();
-  // writeHighScoresToSD();
+  // readHighScoresFromSD();
 
   internal_clock();
   init_usart5();

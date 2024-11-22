@@ -45,9 +45,9 @@ uint16_t orange = 64512;
 uint16_t uhh = 64300;
 
 // variables for high scores
-int8_t highscore1 = 0;
-int8_t highscore2 = 0;
-int8_t highscore3 = 69;
+int8_t highscore1 = 30;
+int8_t highscore2 = 25;
+int8_t highscore3 = 5;
 FATFS fs_storage;
 
 int8_t newJoystickReading = 0;
@@ -610,10 +610,9 @@ void gameStateHandler() {
 
         break;
       case GAMELOST:
-
-        break;
       case GAMEWON:
-
+        readHighScoresFromSD();
+        writeHighScoresToSD();
         break;
     
       default:
@@ -671,9 +670,31 @@ void ateSnack() {
 }
 
 void writeHighScoresToSD() {
+  disable_sdcard();
+  enable_sdcard();
+  mountSD();
+
+  FRESULT res;
+  res = f_unlink("HIGHS.TXT");
+  if (res != FR_OK) return;
+
+  int8_t temp1 = highscore1;
+  int8_t temp2 = highscore2;
+
+  if (snakeLength > highscore1) {
+    highscore1 = snakeLength;
+    highscore2 = temp1;
+    highscore3 = temp2;
+  } else if (snakeLength > highscore2) {
+    highscore2 = snakeLength;
+    highscore3 = temp2;
+  } else if (snakeLength > highscore3) {
+    highscore3 = snakeLength;
+  }
+  
   FIL fil;
   FRESULT fr;
-  fr = f_open(&fil, "0:highscores.txt", FA_WRITE | FA_CREATE_NEW);
+  fr = f_open(&fil, "HIGHS.TXT", FA_WRITE | FA_CREATE_ALWAYS);
   if (fr != FR_OK) {
     f_close(&fil);
     return;
@@ -689,9 +710,17 @@ void writeHighScoresToSD() {
 }
 
 void readHighScoresFromSD() {
+  disable_sdcard();
+  enable_sdcard();
+  mountSD();
+
+  highscore1 = 0;
+  highscore2 = 0;
+  highscore3 = 0;
+
   FIL fil;
   FRESULT fr;
-  fr = f_open(&fil, "0:highscores.txt", FA_READ);
+  fr = f_open(&fil, "HIGHS.TXT", FA_READ | FA_OPEN_EXISTING);
   if (fr != FR_OK) {
     f_close(&fil);
     return;
